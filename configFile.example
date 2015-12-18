@@ -1,0 +1,33 @@
+#Fri Dec 18 09:41:10 EST 2015
+#example config file
+#fill in fields and remove .example extension to use
+#if you don't, the bot will walk you through a configuration wizard
+
+#Twitch IRC Server Settings 
+server=irc.twitch.tv
+port=6667
+channel=\#yourchannel
+
+#IRC Login Information
+#Get your oauth token here: https://twitchapps.com/tmi/
+username=bot_username
+password=oauth\:youroauthpassword
+
+#Discord Login Information
+discordUser=your.discord@email.here
+discordPass=yourdiscordp4ssw0rd
+
+#comma separated list of admins who act as moderators (if IRC OP recognition fails)
+admins=
+
+#follower alerts on/off (will need to configure the Twitch API connection)
+followerAlerts=false
+
+#Markov message generation (bot will learn to talk on his own!)
+snurdeepsMode=true
+
+#Betting enabled (allows users to bet their money)
+bettingEnabled=true
+
+#Connect to a discord server as well as an IRC server
+useDiscord=true
