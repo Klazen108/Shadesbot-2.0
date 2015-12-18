@@ -11,19 +11,22 @@ public class ShadesMessageEvent {
 	final private boolean isOp;
 	final private String user;
 	final MessageSender sender;
+	final MessageOrigin origin;
 	
-	public ShadesMessageEvent(MessageEvent event, MessageSender sender) {
+	public ShadesMessageEvent(MessageEvent event, MessageOrigin origin, MessageSender sender) {
 		user = event.getUser().getNick();
 		message = event.getMessage();
 		isOp = event.getChannel().isOp(event.getUser());
 		this.sender=sender;
+		this.origin = origin;
 	}
 	
-	public ShadesMessageEvent(MessageReceivedEvent event, MessageSender sender) {
+	public ShadesMessageEvent(MessageReceivedEvent event, MessageOrigin origin, MessageSender sender) {
 		user = event.getMessage().getAuthor().getName();
 		message = event.getMessage().getContent();
 		isOp = false;
 		this.sender=sender;
+		this.origin = origin;
 	}
 	
 	public String getUser() {

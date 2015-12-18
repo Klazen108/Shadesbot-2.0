@@ -9,7 +9,6 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,6 @@ import org.json.simple.parser.ParseException;
 import org.pircbotx.Channel;
 import org.pircbotx.Configuration;
 import org.pircbotx.PircBotX;
-import org.pircbotx.cap.EnableCapHandler;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.ConnectEvent;
@@ -45,12 +43,9 @@ import com.klazen.shadesbot.messagehandler.race.Race;
 import com.klazen.shadesbot.messagehandler.rps.RockPaperScissors;
 import com.klazen.shadesbot.messagehandler.war.WarPlugin;
 
-import sx.blah.discord.Discord4J;
 import sx.blah.discord.DiscordClient;
 import sx.blah.discord.handle.IListener;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
-import sx.blah.discord.handle.obj.Message;
-import sx.blah.discord.handle.obj.PrivateChannel;
 import sx.blah.discord.util.MessageBuilder;
 
 public class ShadesBot extends ListenerAdapter<PircBotX> {
@@ -176,7 +171,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		timer = new Timer();
 		timer.schedule(new DiscordWatchdogTask(), DISCORD_WATCHDOG_TIME, DISCORD_WATCHDOG_TIME);
 		
-		//TODO: Make sure to use -Dfile.encoding=UTF-8
+		//Make sure to use -Dfile.encoding=UTF-8
 		//when starting the JVM
 		//if this prints as ???????? then you didn't do it
 		System.out.println("UTF 8 Test: ヽ༼■ل͜■༽ﾉ");
@@ -186,7 +181,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
     	ShadesBot zbot = new ShadesBot(console,config);
 		
         //Configure what we want our bot to do
-		Configuration configuration = new Configuration.Builder()
+		Configuration<PircBotX> configuration = new Configuration.Builder<PircBotX>()
                         .setName(config.getName())
                         .setServer(config.getServer(), config.getPort())
                         .setServerPassword(config.getPassword())
@@ -200,10 +195,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		new Thread(new Runnable() {public void run() {try {
 			bot.startBot();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IrcException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}}}).start(); 
 		
@@ -211,8 +204,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			try {
 				zbot.connectDiscord();
 			} catch (ParseException | URISyntaxException e) {
-				// TODO Auto-generated catch block
 				console.printLineItalic("main", "Discord connect failed: "+e.getMessage());
+				console.printLineItalic(null, "Unable to connect to the discord server:"+e.getLocalizedMessage());
 				e.printStackTrace();
 			}
 		}
@@ -225,7 +218,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		
 		DiscordClient.get().getDispatcher().registerListener(new IListener<MessageReceivedEvent>() {
 			@Override public void receive(MessageReceivedEvent messageReceivedEvent) {
-				ShadesMessageEvent sme = new ShadesMessageEvent(messageReceivedEvent,((s,b) -> sendMessageDiscord(s,messageReceivedEvent.getMessage().getChannel(),b)));
+				ShadesMessageEvent sme = new ShadesMessageEvent(messageReceivedEvent, MessageOrigin.Discord, ((s,b) -> sendMessageDiscord(s,messageReceivedEvent.getMessage().getChannel(),b)));
 				handleMessage(sme,true);
 			}
 		});
@@ -298,13 +291,13 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		bot.sendRaw().rawLineNow("JOIN "+config.getChannel());
 	}
 	
-	public void onPrivateMessage(PrivateMessageEvent pme) {
+	public void onPrivateMessage(PrivateMessageEvent<PircBotX> pme) {
 		System.out.println("[PM from "+pme.getUser().getNick()+"] "+pme.getMessage());
 	}
 
 	@SuppressWarnings("rawtypes")
 	public void onMessage(MessageEvent event) {
-		ShadesMessageEvent sme = new ShadesMessageEvent(event, ((s,b) -> sendMessage(s)));
+		ShadesMessageEvent sme = new ShadesMessageEvent(event, MessageOrigin.IRC, ((s,b) -> sendMessage(s)));
 		handleMessage(sme,true);
 	};
 	
@@ -321,7 +314,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 				event.getSender().sendMessage("ShadesBot 2.0 is online! ヽ༼⌐■ل͜■༽ﾉ", false);
 				setEnabled(true);
 			}
-			else return;
+			else return; //TODO: allow registering message handlers that respond even while offline
 		}
 
 		if ((isAdmin(event.getUser()) || event.isOp()) && event.getMessage().equalsIgnoreCase("!shadesbot off")) {
