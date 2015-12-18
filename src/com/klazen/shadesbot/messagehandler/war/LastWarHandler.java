@@ -14,6 +14,7 @@ public class LastWarHandler extends SimpleMessageHandler {
 
 	@Override
 	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+		if (!cooldownReady) return false;
 		WarEntry lastWar = bot.getWarPlugin().getLastWar();
 		if (lastWar == null) {
 			sender.sendMessage("Our first war has not yet finished!",false);

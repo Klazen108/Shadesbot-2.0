@@ -14,6 +14,7 @@ public class CommitJoinHandler extends SimpleMessageHandler {
 
 	@Override
 	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+		if (!cooldownReady) return false;
 		if (bot.getWarPlugin().getCurrentWar() == null) {
 			sender.sendMessage("There isn't a war going on right now.", false);
 		} else if (bot.getWarPlugin().commitJoin(username)) { //waifu was set
