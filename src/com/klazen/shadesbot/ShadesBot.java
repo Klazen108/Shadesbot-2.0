@@ -150,7 +150,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 				handlers.add(curClass.getConstructor(ShadesBot.class).newInstance(this));
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				console.printLine(null,"Error loading message handler: " + curClass.getCanonicalName());
-				log.error("Error loading message handler: " + curClass.getCanonicalName()+": "+e.getMessage());
+				log.error("Error loading message handler: " + curClass.getCanonicalName(),e);
 				e.printStackTrace();
 			}
 	    }
@@ -167,7 +167,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 				log.info("Initialized plugin: "+curClass.getCanonicalName());
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				console.printLine(null,"Error loading plugin: " + curClass.getCanonicalName());
-				log.error("Error loading plugin: " + curClass.getCanonicalName()+": "+e.getMessage());
+				log.error("Error loading plugin: " + curClass.getCanonicalName(),e);
 				e.printStackTrace();
 			}
 	    }
@@ -190,17 +190,14 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
         zbot.setBot(bot);
 		new Thread(new Runnable() {public void run() {try {
 			bot.startBot();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (IrcException e) {
-			e.printStackTrace();
+		} catch (IOException | IrcException e) {
+			log.error("Error starting bot thread!",e);
 		}}},"PircBotX").start(); 
 		
 		if (config.doUseDiscord()) {
 			try {
 				zbot.connectDiscord();
 			} catch (ParseException | URISyntaxException e) {
-				console.printLineItalic("main", "Discord connect failed: "+e.getMessage());
 				console.printLineItalic(null, "Unable to connect to the discord server!");
 				log.warn("Unable to connect to the discord server!",e);
 				e.printStackTrace();
@@ -309,6 +306,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		if (!isEnabled()) {
 			if ((isAdmin(event.getUser()) || event.isOp()) && event.getMessage().equalsIgnoreCase("!shadesbot on")) {
 				event.getSender().sendMessage("ShadesBot 2.0 is online! ヽ༼⌐■ل͜■༽ﾉ", false);
+				log.info("Shadesbot turned on by "+event.getUser());
 				setEnabled(true);
 			}
 			else return; //TODO: allow registering message handlers that respond even while offline
@@ -316,6 +314,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 
 		if ((isAdmin(event.getUser()) || event.isOp()) && event.getMessage().equalsIgnoreCase("!shadesbot off")) {
 			event.getSender().sendMessage("WellCya, YaNerd! ヽ༼⌐■ل͜■༽ﾉ", false);
+			log.info("Shadesbot turned off by "+event.getUser());
 			setEnabled(false);
 			return;
 		}
@@ -326,15 +325,26 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		if (p.isIgnored()) return;
 
 		for (Plugin curPlugin : plugins.values()) {
-			curPlugin.onMessage(this, event);
+			//wrap each onMessage individually so one can fail and the rest can run
+			try {
+				curPlugin.onMessage(this, event);
+			} catch (Exception e) {
+				log.error("Exception thrown while processing plugin message handler!",e);
+			}
 		}
 		
 		for (SimpleMessageHandler curHandler : handlers) {
-			curHandler.handleMessage(event);
+			//wrap each onMessage individually so one can fail and the rest can run
+			try {
+				curHandler.handleMessage(event);
+			} catch (Exception e) {
+				log.error("Exception thrown while processing message handler!",e);
+			}
 		}
 	}
 	
 	public <T extends Plugin> T getPlugin(Class<T> pluginType) throws PluginNotRegisteredException {
+		//maybe I don't get generics 100% because I thought plugins.get would return the correct type 
 		@SuppressWarnings("unchecked")
 		T plugin = (T) plugins.get(pluginType);
 		if (plugin == null) throw new PluginNotRegisteredException();
@@ -391,12 +401,30 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		return personMap;
 	}
 	
+	/**
+	 * Please don't use this, I was lazy and promise I'll get rid of this one day
+	 * 
+	 * @param filename
+	 * @return
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 * @throws ClassNotFoundException
+	 */
+	@Deprecated
 	public Object loadObject(String filename) throws IOException, FileNotFoundException, ClassNotFoundException {
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
 			return ois.readObject();
 		}
 	}
-	
+
+	/**
+	 * Please don't use this, I was lazy and promise I'll get rid of this one day
+	 * 
+	 * @param filename
+	 * @param object
+	 * @throws IOException
+	 */
+	@Deprecated
 	void saveObject(String filename, Object object) throws IOException {
 		synchronized (object) {
 			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename)))  {
@@ -447,7 +475,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	 * Returns a random integer between 0 and upperbound, inclusive
 	 * @param upperbound The maximum value that can be returned
 	 * @return A random value using Java's RNG between 0 and upperbound, inclusive
-	 * 
 	 */
 	public int irandom(int upperbound) {
 		return randomGen.nextInt(upperbound+1);
@@ -471,14 +498,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		}
 	}
 	
-	public void setBettingEnabled(boolean bettingEnabled) {
-		config.setBettingEnabled(bettingEnabled);
-	}
-	
-	public void setSnurdeepsEnabled(boolean enabled) {
-		config.setSnurdeepsMode(enabled);
-	}
-	
 	public void setTwitchAuthKey(char[] authkey) {
 		twitchInterface = new TwitchInterface(authkey, console);
 	}
@@ -495,6 +514,9 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		return config;
 	}
 	
+	/**
+	 * @return a set of all active chat participants
+	 */
 	public Set<String> getChatParticipants() {
 		return uSet.keySet();
 	}
@@ -551,7 +573,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	boolean noAlertNextFollowers = true;
 	
 	class AutoTwitchTask extends TimerTask {
-		
 		@Override
 		public void run() {
 			if (config.isFollowerAlerts() && enabled) {

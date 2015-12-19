@@ -18,11 +18,11 @@ public class DeepsHandler extends SimpleMessageHandler {
 		if (isMod) {
 			if (m.group(1).equalsIgnoreCase("on")) {
 				sender.sendMessage("Markov generator on!", false);
-				bot.setSnurdeepsEnabled(true);
+				bot.getConfig().setSnurdeepsMode(true);
 			}
 			else {
 				sender.sendMessage("Markov generator off!", false);
-				bot.setSnurdeepsEnabled(false);
+				bot.getConfig().setSnurdeepsMode(false);
 			}
 		}
 		return false;

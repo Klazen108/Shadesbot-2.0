@@ -43,6 +43,8 @@ public interface Plugin {
 	/**
 	 * Called every time a message is recieved by the bot. Usually, you'll want to make a MessageHandler for this, as it
 	 * handles some of the internal stuff for you. However, if your plugin needs complete control, this listener is provided.
+	 * 
+	 * NOTE: All plugins' onMessage methods are called before all message handlers' handleMessage methods.
 	 * @param bot
 	 * @param event
 	 */

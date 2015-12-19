@@ -18,10 +18,10 @@ public class BettingEnabledHandler extends SimpleMessageHandler {
 		if (isMod) {
 			if (m.group(1).equalsIgnoreCase("on")) {
 				sender.sendMessage("The casino floor is open for business!", false);
-				bot.setBettingEnabled(true);
+				bot.getConfig().setBettingEnabled(true);
 			} else {
 				sender.sendMessage("No more betting for you scumbags!", false);
-				bot.setBettingEnabled(false);
+				bot.getConfig().setBettingEnabled(false);
 			}
 		}
 		return false;
