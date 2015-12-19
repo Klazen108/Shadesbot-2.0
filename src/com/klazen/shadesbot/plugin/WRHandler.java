@@ -13,14 +13,7 @@ public class WRHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
-		//TODO: move this to its own handler
-		//if (message.contains("RAF2 com") || message.contains("http://bitly.com/championshipskincodes")) {
-		//	bot.sendMessage("/timeout " + username + " 1");
-		//	bot.sendMessage("KAPOW " + username);
-		//}
-		
-		if (!cooldownReady) return false;
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		String lc = message.toLowerCase();
 		if (lc.contains("what") && (lc.contains("wr") || lc.contains("record"))) {
 			if (lc.contains("boshy")) sender.sendMessage("Boshy Leaderboards: http://www.speedrun.com/boshy", false);

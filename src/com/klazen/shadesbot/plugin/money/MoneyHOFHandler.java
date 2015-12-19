@@ -17,7 +17,7 @@ public class MoneyHOFHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (isMod) {
 	        List<String> sortedList = Util.sortMapDescending(new MoneyComparator(), bot.getPersonMap());
 	        String richpeople = "";

@@ -14,8 +14,7 @@ public class MyTeamHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
-		if (!cooldownReady) return false;
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (bot.getPlugin(WarPlugin.class).getCurrentWar() == null) {
 			sender.sendMessage("There isn't a war going on right now.", false);
 		} else {

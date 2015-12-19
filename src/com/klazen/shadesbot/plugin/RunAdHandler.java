@@ -14,7 +14,7 @@ public class RunAdHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (isMod) {
 			switch (bot.irandom(10)) {
 			case 0: sender.sendMessage("This stream brought to you by cool, crisp, refreshing Aquafina http://imgur.com/fJP3oJK", false); break;

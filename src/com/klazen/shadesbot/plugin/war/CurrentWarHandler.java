@@ -14,7 +14,7 @@ public class CurrentWarHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		WarEntry currentWar = bot.getPlugin(WarPlugin.class).getCurrentWar();
 		if (currentWar == null) {
 			sender.sendMessage("There isn't a war going on right now.",false);

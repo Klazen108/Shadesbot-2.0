@@ -1,4 +1,5 @@
 package com.klazen.shadesbot.plugin;
+import java.util.EnumSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,22 +16,28 @@ public abstract class SimpleMessageHandler {
 	
 	public static final long COOLDOWN_MILLIS = 45000;
 	
+	EnumSet<MessageOrigin> registeredOrigin;
+	
 	public SimpleMessageHandler(ShadesBot bot, String regexMatch) {
+		this (bot,regexMatch,EnumSet.of(MessageOrigin.IRC,MessageOrigin.Discord));
+	}
+	
+	public SimpleMessageHandler(ShadesBot bot, String regexMatch, EnumSet<MessageOrigin> registeredOrigin) {
 		p = Pattern.compile(regexMatch, Pattern.CASE_INSENSITIVE);
 		this.bot = bot;
+		this.registeredOrigin = registeredOrigin;
 	}
 	
 	/**
 	 * 
 	 * @param username
 	 * @param isMod
-	 * @param cooldownReady if the cooldown period has expired and a user should be able to do the command
 	 * @param message
 	 * @param m
 	 * @param origin TODO
 	 * @return true if the cooldown should be procced, false otherwise
 	 */
-	protected abstract boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin);
+	protected abstract boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin);
 	
 	/**
 	 * This method should be called in the onMessageEvent function in the bot for every event; it will do some administrative tasks
@@ -39,6 +46,8 @@ public abstract class SimpleMessageHandler {
 	 */
 	public final void handleMessage(ShadesMessageEvent event) {
 		try {
+			if (!registeredOrigin.contains(event.getOrigin())) return;
+				
 			String message = event.getMessage();
 			Matcher m = p.matcher(message);
 			if (m.matches()) {
@@ -53,7 +62,7 @@ public abstract class SimpleMessageHandler {
 	
 				boolean doCooldown = false;
 				try {
-					doCooldown = onMessage(event.getUser(),isMod,cooldownReady || isMod,message,m,event.getSender(), event.getOrigin());
+					doCooldown = onMessage(event.getUser(),isMod,message,m,event.getSender(),event.getOrigin());
 				} catch (Exception e) {
 					System.err.println("Error occurred while handling message!");
 					e.printStackTrace();

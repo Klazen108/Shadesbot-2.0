@@ -18,10 +18,8 @@ public class LevelHandler extends SimpleMessageHandler {
 
 	@SuppressWarnings("unused")
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (true) return false; //disable level announcements for now
-		
-		if (!cooldownReady) return false;
 		
         List<String> sortedList = Util.sortMapDescending(new LevelComparator(), bot.getPersonMap());
         int pos = sortedList.indexOf(username.toLowerCase());

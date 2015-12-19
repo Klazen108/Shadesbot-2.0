@@ -20,15 +20,13 @@ public class RockPaperScissorsHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
-		if (m.group(1).equalsIgnoreCase("!rps") && cooldownReady) {
-			if (cooldownReady) {
-				lastRunTime = System.currentTimeMillis();
-				bot.getPlugin(RockPaperScissorsPlugin.class).startRPS(sender);
-				return true;
-			}
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
+		if (m.group(1).equalsIgnoreCase("!rps")) {
+			lastRunTime = System.currentTimeMillis();
+			bot.getPlugin(RockPaperScissorsPlugin.class).startRPS(sender);
+			return true;
 		}
-		else if (m.group(1).equalsIgnoreCase("!rpsStreak") && cooldownReady) {
+		else if (m.group(1).equalsIgnoreCase("!rpsStreak")) {
 			sender.sendMessage(username + "'s best RPS win streak: " + bot.getPerson(username).getBestRPSWinStreak(), false);
 			return true;
 		}
@@ -45,13 +43,11 @@ public class RockPaperScissorsHandler extends SimpleMessageHandler {
 			}
 		} 
 		else if (m.group(1).equalsIgnoreCase("!rpsWins")) {
-			if (cooldownReady) {
-		        List<String> sortedList = Util.sortMapDescending(new RPSWinsComparator(), bot.getPersonMap());
-		        int pos = sortedList.indexOf(username);
-		        int count = sortedList.size();
-		        sender.sendMessage(username + " has won RPS " + bot.getPerson(username).getRPSWins() + " times! ("+Util.cardinalToOrdinal(pos+1)+" of " + count + ")", false);
-				return true;
-			}
+	        List<String> sortedList = Util.sortMapDescending(new RPSWinsComparator(), bot.getPersonMap());
+	        int pos = sortedList.indexOf(username);
+	        int count = sortedList.size();
+	        sender.sendMessage(username + " has won RPS " + bot.getPerson(username).getRPSWins() + " times! ("+Util.cardinalToOrdinal(pos+1)+" of " + count + ")", false);
+			return true;
 		}
 		return false;
 	}

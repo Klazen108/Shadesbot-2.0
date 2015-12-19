@@ -15,7 +15,7 @@ public class GivePointsHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (isMod) {
 			WarEntry currentWar = bot.getPlugin(WarPlugin.class).getCurrentWar();
 			if (currentWar == null) {

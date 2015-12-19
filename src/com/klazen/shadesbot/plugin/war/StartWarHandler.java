@@ -15,7 +15,7 @@ public class StartWarHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (isMod) {
 			if (bot.getPlugin(WarPlugin.class).getCurrentWar() != null) {
 				sender.sendMessage("Can't start a new war, there's already one going on!",false);

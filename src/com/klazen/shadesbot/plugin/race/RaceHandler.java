@@ -14,7 +14,7 @@ public class RaceHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		RacePlugin race = bot.getPlugin(RacePlugin.class);
 		if (!race.isSet()) sender.sendMessage("No race set!", false);
 		else sender.sendMessage(race.toString(), false);

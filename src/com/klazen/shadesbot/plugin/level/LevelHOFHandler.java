@@ -18,7 +18,7 @@ public class LevelHOFHandler extends SimpleMessageHandler {
 
 	@SuppressWarnings("unused")
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (true) return false; //disable level announcements for now
 		
 		if (isMod) {

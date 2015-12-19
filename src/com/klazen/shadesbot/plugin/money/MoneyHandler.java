@@ -14,9 +14,7 @@ public class MoneyHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
-		if (!cooldownReady) return false;
-		
+	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		sender.sendMessage(username + "'s balance: " + bot.getPerson(username).getMoney()+" eggs", false);
 		return true;
 	}
