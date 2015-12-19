@@ -62,7 +62,8 @@ public abstract class SimpleMessageHandler {
 	
 				boolean doCooldown = false;
 				try {
-					doCooldown = onMessage(event.getUser(),isMod,message,m,event.getSender(),event.getOrigin());
+					if (cooldownReady || isMod)
+						doCooldown = onMessage(event.getUser(),isMod,message,m,event.getSender(),event.getOrigin());
 				} catch (Exception e) {
 					System.err.println("Error occurred while handling message!");
 					e.printStackTrace();
