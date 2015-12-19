@@ -3,6 +3,9 @@ import java.util.EnumSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.Person;
@@ -10,6 +13,8 @@ import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.ShadesMessageEvent;
 
 public abstract class SimpleMessageHandler {
+
+	Logger log;
 	
 	final Pattern p;
 	protected final ShadesBot bot;
@@ -19,13 +24,14 @@ public abstract class SimpleMessageHandler {
 	EnumSet<MessageOrigin> registeredOrigin;
 	
 	public SimpleMessageHandler(ShadesBot bot, String regexMatch) {
-		this (bot,regexMatch,EnumSet.of(MessageOrigin.IRC,MessageOrigin.Discord));
+		this(bot,regexMatch,EnumSet.of(MessageOrigin.IRC,MessageOrigin.Discord));
 	}
 	
 	public SimpleMessageHandler(ShadesBot bot, String regexMatch, EnumSet<MessageOrigin> registeredOrigin) {
 		p = Pattern.compile(regexMatch, Pattern.CASE_INSENSITIVE);
 		this.bot = bot;
 		this.registeredOrigin = registeredOrigin;
+		log = LoggerFactory.getLogger(getClass());
 	}
 	
 	/**
@@ -65,8 +71,7 @@ public abstract class SimpleMessageHandler {
 					if (cooldownReady || isMod)
 						doCooldown = onMessage(event.getUser(),isMod,message,m,event.getSender(),event.getOrigin());
 				} catch (Exception e) {
-					System.err.println("Error occurred while handling message!");
-					e.printStackTrace();
+					log.error("Error occurred while handling message!",e);
 				}
 				if (doCooldown && !isMod) person.setLastCmdUsedTime(System.currentTimeMillis());
 			}

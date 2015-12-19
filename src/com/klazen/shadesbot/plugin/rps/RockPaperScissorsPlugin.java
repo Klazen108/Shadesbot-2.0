@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.Person;
 import com.klazen.shadesbot.Plugin;
@@ -14,6 +17,8 @@ public class RockPaperScissorsPlugin implements Runnable, Plugin {
 	public static final int RPS_MATCH_LENGTH_MS = 25000;
 	public static final int RPS_SHOOT_WAIT_MS = 500;
 	public static final int RPS_ANNOUNCE_WAIT_MS = 1000;
+
+	static Logger log = LoggerFactory.getLogger(RockPaperScissorsPlugin.class);
 	
 	ShadesBot bot;
 	
@@ -99,8 +104,7 @@ public class RockPaperScissorsPlugin implements Runnable, Plugin {
 			try {
 				wait(millisToWait);
 			} catch (InterruptedException e) {
-				System.out.println("Interrupted while waiting! time left:" + (targetTime-System.currentTimeMillis()));
-				e.printStackTrace();
+				log.warn("Interrupted while waiting! time left:" + (targetTime-System.currentTimeMillis()),e);
 			}
 		} while (System.currentTimeMillis()<targetTime);
 	}

@@ -53,6 +53,8 @@ import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.output.OutputCAP;
 import org.pircbotx.output.OutputRaw;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.klazen.shadesbot.BotConfig;
 import com.klazen.shadesbot.BotConsole;
@@ -70,6 +72,8 @@ import javax.swing.ScrollPaneConstants;
 
 public class MainFrame extends JFrame implements ActionListener, BotConsole {
 	private static final long serialVersionUID = -416993829633015698L;
+
+	static Logger log = LoggerFactory.getLogger(MainFrame.class);
 	
 	private JPanel contentPane;
 	private JTextField txtChat;
@@ -272,8 +276,7 @@ public class MainFrame extends JFrame implements ActionListener, BotConsole {
 					try {
 						config = BotConfig.load(config.getFilename());
 					} catch (Exception e) {
-						System.out.println("Failed to load config from "+config.getFilename());
-						System.out.println(e.getLocalizedMessage());
+						log.warn("Failed to load config from "+config.getFilename(),e);
 						config = new BotConfig();
 					}
 					

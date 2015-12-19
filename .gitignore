@@ -2,8 +2,8 @@ bin
 config_backup
 target
 configFile
-markovFile
+markov.xml
 twitchFile
 usersFile
 warFile
-Shadesbot2.zip
+shadesbot.log

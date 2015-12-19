@@ -35,6 +35,8 @@ import org.pircbotx.hooks.events.PartEvent;
 import org.pircbotx.hooks.events.PrivateMessageEvent;
 import org.pircbotx.hooks.events.ServerResponseEvent;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.klazen.shadesbot.plugin.*;
 
@@ -58,6 +60,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	public static final int DISCORD_RETRY_COUNT = 5;
 	
 	int discordRetryCount = DISCORD_RETRY_COUNT;
+
+	static Logger log = LoggerFactory.getLogger(ShadesBot.class);
 	
 	Map<String,Person> personMap;
 	String userFile;
@@ -90,16 +94,14 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		try {
 			personMap = (Map<String,Person>)loadObject(userFile);
 		} catch (Exception e) {
-			System.out.println("Failed to load users from "+userFile);
-			System.out.println(e.getLocalizedMessage());
+			log.warn("Failed to load users from "+userFile,e);
 			personMap = new HashMap<>(100);
 		}
 
 		try {
 			twitchInterface = (TwitchInterface)loadObject(twitchFile);
 		} catch (Exception e) {
-			System.out.println("Failed to load twitch settings from "+twitchFile);
-			System.out.println(e.getLocalizedMessage());
+			log.warn("Failed to load twitch settings from "+twitchFile,e);
 		}
 		
 		userlistPattern = Pattern.compile(".+?"+config.getChannel()+" :(.+?)");
@@ -108,8 +110,13 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		
 		uSet = new ConcurrentHashMap<String,Long>();
 		
+		log.info("Loading Message Handlers...");
 		loadMessageHandlers();
+		log.info("Message Handlers Loaded.");
+		
+		log.info("Loading Plugins...");
 		loadPlugins();
+		log.info("Plugins Loaded.");
 	    
 	    for (Plugin curPlugin : plugins.values()) {
 	    	curPlugin.init(this);
@@ -130,7 +137,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		//Make sure to use -Dfile.encoding=UTF-8
 		//when starting the JVM
 		//if this prints as ???????? then you didn't do it
-		System.out.println("UTF 8 Test: ヽ༼■ل͜■༽ﾉ");
+		log.info("UTF 8 Test: ヽ༼■ل͜■༽ﾉ");
 	}
 	
 	private void loadMessageHandlers() {
@@ -143,7 +150,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 				handlers.add(curClass.getConstructor(ShadesBot.class).newInstance(this));
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				console.printLine(null,"Error loading message handler: " + curClass.getCanonicalName());
-				console.printLine(null,e.getMessage());
+				log.error("Error loading message handler: " + curClass.getCanonicalName()+": "+e.getMessage());
 				e.printStackTrace();
 			}
 	    }
@@ -157,10 +164,10 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	    for (Class<? extends Plugin> curClass : pluginSubtypes) {
 	    	try {
 				plugins.put(curClass,curClass.getConstructor().newInstance());
-				System.out.println("Initialized plugin: "+curClass.getCanonicalName());
+				log.info("Initialized plugin: "+curClass.getCanonicalName());
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				console.printLine(null,"Error loading plugin: " + curClass.getCanonicalName());
-				console.printLine(null,e.getMessage());
+				log.error("Error loading plugin: " + curClass.getCanonicalName()+": "+e.getMessage());
 				e.printStackTrace();
 			}
 	    }
@@ -194,7 +201,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 				zbot.connectDiscord();
 			} catch (ParseException | URISyntaxException e) {
 				console.printLineItalic("main", "Discord connect failed: "+e.getMessage());
-				console.printLineItalic(null, "Unable to connect to the discord server:"+e.getLocalizedMessage());
+				console.printLineItalic(null, "Unable to connect to the discord server!");
+				log.warn("Unable to connect to the discord server!",e);
 				e.printStackTrace();
 			}
 		}
@@ -235,11 +243,11 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	
 	//This event is fired for every single response we get from the server (including the userlist response)
 	public void onServerResponse(ServerResponseEvent<PircBotX> event) {
-		System.out.println(event.getRawLine());
+		log.trace(event.getRawLine());
 		if (event.getCode() == 353) { //353 is the userlist event
 			Matcher m = userlistPattern.matcher(event.getRawLine());
 			if (m.matches()) {
-				System.out.println("Userlist found in this response: " + m.group(1));
+				log.trace("Userlist found in this response: " + m.group(1));
 				String[] users = m.group(1).split("\\s");
 				synchronized (uSet) {
 					for (String curUser : users) {
@@ -253,7 +261,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	
 	//Every time a user joins, we will add his name to the list
 	public void onJoin(JoinEvent<PircBotX> event) {
-		//System.out.println("join: "+event.getUser().getNick());
 		console.printLineItalic("join",event.getUser().getNick());
 		updateChatParticipant(event.getUser().getNick());
 		console.updateUserList(uSet.keySet());
@@ -261,7 +268,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	
 	//And clear a user's name from the list when he leaves
 	public void onPart(PartEvent<PircBotX> event) {
-		//System.out.println("part: "+event.getUser().getNick());
 		console.printLineItalic("part",event.getUser().getNick());
 		synchronized (uSet) {
 			uSet.remove(event.getUser().getNick());
@@ -281,7 +287,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	}
 	
 	public void onPrivateMessage(PrivateMessageEvent<PircBotX> pme) {
-		System.out.println("[PM from "+pme.getUser().getNick()+"] "+pme.getMessage());
+		log.info("[PM from "+pme.getUser().getNick()+"] "+pme.getMessage());
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -345,22 +351,23 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	}
 	
 	public void onDisconnect() {
-		System.out.println("Closing...");
+		log.info("Closing...");
 		try {
 			saveObject(userFile,personMap);
-			System.out.println("User data saved.");
+			log.info("User data saved.");
 			config.save();
-			System.out.println("Config saved.");
+			log.info("Config saved.");
 			if (twitchInterface != null) {
 				saveObject(twitchFile,twitchInterface);
-				System.out.println("Twitch data saved.");
+				log.info("Twitch data saved.");
 			}
+			log.info("Telling plugins to save...");
 			for (Plugin curPlugin : plugins.values()) {
 				curPlugin.onSave();
 			}
-			System.out.println("War data saved.");
+			log.info("Plugins saved.");
 		} catch (IOException e) {
-			System.err.println("Error saving data!"+e.getLocalizedMessage());
+			log.error("Error saving data!",e);
 			e.printStackTrace();
 		}
 	}
@@ -548,7 +555,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		@Override
 		public void run() {
 			if (config.isFollowerAlerts() && enabled) {
-				System.out.println("Accessing twitch API");
+				log.trace("Accessing Twitch API for Follower Check");
 				try {
 					twitchInterface.update(config.getChannel(),noAlertNextFollowers);
 					noAlertNextFollowers = false;
@@ -580,16 +587,16 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			if (config.doUseDiscord()) {
 				if (!DiscordClient.get().isReady()) {
 					try {
+						log.warn("Disconnected from Discord. Attempting reconnect.");
 						DiscordClient.get().login(config.getDiscordUser(),config.getDiscordPass());
-						System.out.println("Reconnected to discord.");
 						discordRetryCount = DISCORD_RETRY_COUNT;
 					} catch (IOException | ParseException | URISyntaxException e) {
-						System.err.println("Error reconnecting to discord: "+e.getLocalizedMessage());
+						log.warn("Error reconnecting to discord!",e);
 						discordRetryCount-=1;
 						if (discordRetryCount>0) {
-							System.err.println("Will retry "+discordRetryCount+" more times.");
+							log.info("Will retry "+discordRetryCount+" more times.");
 						} else {
-							System.err.println("Couldn't reconnect. Halting. Reenable discord from the config menu and restart to reconnect.");
+							log.warn("Couldn't reconnect. Halting. Reenable discord from the config menu and restart to reconnect.");
 							console.printLineItalic(null, "Failed reconnecting to discord. Reenable and restart to try again.");
 							config.setDoUseDiscord(false);
 						}

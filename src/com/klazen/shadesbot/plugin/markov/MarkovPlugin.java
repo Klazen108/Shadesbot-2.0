@@ -14,6 +14,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -24,6 +26,8 @@ import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.ShadesMessageEvent;
  
 public class MarkovPlugin implements Plugin {
+	
+	static Logger log = LoggerFactory.getLogger(MarkovPlugin.class);
 	
 	Hashtable<Tuple, DenseBag<String>> markovChain;
 	
@@ -144,8 +148,7 @@ public class MarkovPlugin implements Plugin {
 					} catch (Exception e) {
 						String elementName = curBagEntry.getKey();
 						if (elementName == null) elementName = "null";
-						System.err.println("Error while serializing a markov chain element! Name: "+elementName+" (continuing serialization)");
-						e.printStackTrace();
+						log.error("Error while serializing a markov chain element! Name: "+elementName+" (continuing serialization)",e);
 					}
 				}
 				
@@ -158,8 +161,7 @@ public class MarkovPlugin implements Plugin {
 	        StreamResult result = new StreamResult(new FileOutputStream(new File("markov.xml")));
 	        transformer.transform(source, result);
 		} catch (Exception e) {
-			System.err.println("Error serializing Markov XML document to file!");
-			e.printStackTrace();
+			log.error("Error serializing Markov XML document to file!",e);
 		}
 	}
 
@@ -175,7 +177,7 @@ public class MarkovPlugin implements Plugin {
 	        
 	        Element root = document.getDocumentElement();
 	    	NodeList entryList = root.getElementsByTagName("e");
-	    	System.out.println("entries:"+entryList.getLength());
+	    	log.trace("entries:"+entryList.getLength());
 	    	for (int i=0; i<entryList.getLength(); i++) {
 	    		Node curNode = entryList.item(i);
 	    		if (curNode.getNodeType() != Node.ELEMENT_NODE) continue;
@@ -195,25 +197,17 @@ public class MarkovPlugin implements Plugin {
 		    	
 		    	newMarkovChain.put(newTuple, newBag);
 	    	}
-	    	System.out.println("Load complete, swapping markov chains");
+	    	log.trace("Load complete, swapping markov chains");
 	    	markovChain = newMarkovChain;
 		} catch (Exception e) {
-			System.err.println("Error deserializing Markov XML document from file!");
-			e.printStackTrace();
+			log.error("Error deserializing Markov XML document from file!",e);
 		}
 	}
 
 	@Override
-	public void init(ShadesBot bot) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	public void init(ShadesBot bot) { }
 	@Override
-	public void destroy(ShadesBot bot) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void destroy(ShadesBot bot) { }
 
 	@Override
 	public void onMessage(ShadesBot bot, ShadesMessageEvent event) {

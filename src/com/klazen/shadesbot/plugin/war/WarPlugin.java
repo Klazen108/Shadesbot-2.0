@@ -15,6 +15,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.klazen.shadesbot.Plugin;
 import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.ShadesMessageEvent;
@@ -24,6 +27,8 @@ public class WarPlugin implements Plugin {
 	public static final long POINTS_FROM_TIMER = 2;
 	public static final long POINTS_FROM_JOINING = 50;
 	public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+	static Logger log = LoggerFactory.getLogger(WarPlugin.class);
 	
 	TreeSet<WarEntry> wars;
 	
@@ -184,8 +189,7 @@ public class WarPlugin implements Plugin {
 			announcement = newAnnouncement;
 			wars = newEntries;
 		} catch (Exception e) {
-			System.err.println("Error loading war file: "+e.getLocalizedMessage());
-			e.printStackTrace();
+			log.error("Error loading war file",e);
 		}
 	}
 
@@ -197,10 +201,7 @@ public class WarPlugin implements Plugin {
 	}
 
 	@Override
-	public void destroy(ShadesBot bot) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void destroy(ShadesBot bot) { }
 
 	@Override
 	public void onMessage(ShadesBot bot, ShadesMessageEvent event) {
