@@ -2,6 +2,7 @@ package com.klazen.shadesbot.messagehandler.war;
 
 import java.util.regex.Matcher;
 
+import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.messagehandler.SimpleMessageHandler;
@@ -13,7 +14,7 @@ public class SetWarEventHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (isMod) {
 			String newAnnouncement = m.group(1);
 			if (newAnnouncement == null || newAnnouncement.length()==0) {

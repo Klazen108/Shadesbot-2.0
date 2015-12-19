@@ -3,6 +3,7 @@ package com.klazen.shadesbot.messagehandler.money;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.Util;
@@ -15,7 +16,7 @@ public class MoneyAlltimeHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (!cooldownReady) return false;
         List<String> sortedList = Util.sortMapDescending(new MoneyComparator(), bot.getPersonMap());
         int pos = sortedList.indexOf(username);

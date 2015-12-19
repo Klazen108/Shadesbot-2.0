@@ -2,6 +2,7 @@ package com.klazen.shadesbot.messagehandler;
 
 import java.util.regex.Matcher;
 
+import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.ShadesBot;
 
@@ -12,7 +13,7 @@ public class WRHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		//TODO: move this to its own handler
 		//if (message.contains("RAF2 com") || message.contains("http://bitly.com/championshipskincodes")) {
 		//	bot.sendMessage("/timeout " + username + " 1");

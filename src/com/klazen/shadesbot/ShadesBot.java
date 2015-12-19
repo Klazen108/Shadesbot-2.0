@@ -304,9 +304,11 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	private void handleMessage(ShadesMessageEvent event, boolean ircMode) {
 		console.printLine(event.getUser(),event.getMessage());
 
-		synchronized (uSet) {
-			updateChatParticipant(event.getUser());
-			console.updateUserList(uSet.keySet());
+		if (event.origin == MessageOrigin.IRC) {
+			synchronized (uSet) {
+				updateChatParticipant(event.getUser());
+				console.updateUserList(uSet.keySet());
+			}
 		}
 		
 		if (!isEnabled()) {
@@ -546,7 +548,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		public void run() {
 			try {
 				for (Entry<String,Long> curUser : uSet.entrySet()) {
-					if (curUser.getValue() < System.currentTimeMillis() - AUTO_XP_TIME*30) { //30 minutes fix this or something idk lmao
+					if (curUser.getValue() < System.currentTimeMillis() - AUTO_XP_TIME*30) { //TODO: 30 minutes fix this or something idk lmao
 						removeChatParticipant(curUser.getKey());
 					} else {
 						if (enabled) {
@@ -557,7 +559,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 					console.updateUserList(uSet.keySet());
 				}
 				if (enabled) war.pointsFromTimer(uSet.keySet());
-				//safetySave();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

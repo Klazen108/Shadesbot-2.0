@@ -4,6 +4,7 @@ import java.util.regex.Pattern;
 
 import org.pircbotx.hooks.events.MessageEvent;
 
+import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.Person;
 import com.klazen.shadesbot.ShadesBot;
@@ -28,9 +29,10 @@ public abstract class SimpleMessageHandler {
 	 * @param cooldownReady if the cooldown period has expired and a user should be able to do the command
 	 * @param message
 	 * @param m
+	 * @param origin TODO
 	 * @return true if the cooldown should be procced, false otherwise
 	 */
-	protected abstract boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender);
+	protected abstract boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin);
 	
 	/**
 	 * This method should be called in the onMessageEvent function in the bot for every event; it will do some administrative tasks
@@ -51,7 +53,7 @@ public abstract class SimpleMessageHandler {
 				
 				boolean cooldownReady = System.currentTimeMillis() > lastCmdUsedTime + COOLDOWN_MILLIS;
 	
-				boolean doCooldown = onMessage(event.getUser(),isMod,cooldownReady || isMod,message,m,event.getSender());
+				boolean doCooldown = onMessage(event.getUser(),isMod,cooldownReady || isMod,message,m,event.getSender(), event.getOrigin());
 				if (doCooldown && !isMod) person.setLastCmdUsedTime(System.currentTimeMillis());
 			}
 		} catch (Exception e) {

@@ -3,6 +3,7 @@ package com.klazen.shadesbot.messagehandler.war;
 import java.util.Date;
 import java.util.regex.Matcher;
 
+import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.messagehandler.SimpleMessageHandler;
@@ -14,7 +15,7 @@ public class StartWarHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (isMod) {
 			if (bot.getWarPlugin().getCurrentWar() != null) {
 				bot.sendMessage("Can't start a new war, there's already one going on!");

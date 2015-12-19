@@ -3,6 +3,7 @@ package com.klazen.shadesbot.messagehandler.level;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.Person;
 import com.klazen.shadesbot.ShadesBot;
@@ -17,7 +18,7 @@ public class LevelHandler extends SimpleMessageHandler {
 
 	@SuppressWarnings("unused")
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (true) return false; //disable level announcements for now
 		
 		if (!cooldownReady) return false;

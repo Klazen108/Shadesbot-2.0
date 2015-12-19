@@ -9,6 +9,9 @@ import com.klazen.shadesbot.Person;
 import com.klazen.shadesbot.ShadesBot;
 
 public class RockPaperScissors implements Runnable {
+	public static final int RPS_MATCH_LENGTH_MS = 25000;
+	public static final int RPS_SHOOT_WAIT_MS = 500;
+	public static final int RPS_ANNOUNCE_WAIT_MS = 1000;
 	final ShadesBot bot;
 	Map<String,RPSChoice> choiceMap;
 	Map<String,Integer> betMap;
@@ -30,9 +33,9 @@ public class RockPaperScissors implements Runnable {
 	@Override
 	public void run() {
 		sender.sendMessage("Let's play Rock Paper Scissors! Make your choices now!", false);
-		doWait(25000);
+		doWait(RPS_MATCH_LENGTH_MS);
 		sender.sendMessage("Shoot!", false);
-		doWait(500);
+		doWait(RPS_SHOOT_WAIT_MS);
 		
 		RPSChoice myChoice = null;
 		switch (bot.irandom(2)) {
@@ -42,7 +45,7 @@ public class RockPaperScissors implements Runnable {
 		}
 		canAcceptParticipants = false;
 		sender.sendMessage("/me throws " + myChoice.toString() + "!", false);
-		doWait(1000);
+		doWait(RPS_ANNOUNCE_WAIT_MS);
 		
 		String winners = "";
 		Iterator<Map.Entry<String,RPSChoice>> it = choiceMap.entrySet().iterator();

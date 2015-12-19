@@ -2,6 +2,7 @@ package com.klazen.shadesbot.messagehandler;
 
 import java.util.regex.Matcher;
 
+import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.ShadesBot;
 
@@ -13,7 +14,7 @@ public class RunAdHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (isMod) {
 			switch (bot.irandom(10)) {
 			case 0: sender.sendMessage("This stream brought to you by cool, crisp, refreshing Aquafina http://imgur.com/fJP3oJK", false); break;

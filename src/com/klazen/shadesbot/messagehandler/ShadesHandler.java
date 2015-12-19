@@ -2,6 +2,7 @@ package com.klazen.shadesbot.messagehandler;
 
 import java.util.regex.Matcher;
 
+import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.ShadesBot;
 
@@ -12,7 +13,7 @@ public class ShadesHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		switch (bot.irandom(22)) {
 	    case 0: sender.sendMessage("ヽ༼ຈ_ຈ༽ﾉ ﻿ＷＨＯ ＳＴＯＬＥ ＴＨＥ ＳＨＡＤＥＳ ヽ༼ຈ_ຈ༽ﾉ", false); break;
 	    case 1: sender.sendMessage("ヽ༼■ل͜■༽ﾉ ＳＨＡＤＥＳ ＯＲ ＳＨＡＤＥＳ ヽ༼■ل͜■༽ﾉ", false); break;

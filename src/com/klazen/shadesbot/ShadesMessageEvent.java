@@ -29,6 +29,10 @@ public class ShadesMessageEvent {
 		this.origin = origin;
 	}
 	
+	public MessageOrigin getOrigin() {
+		return origin;
+	}
+	
 	public String getUser() {
 		return user;
 	}

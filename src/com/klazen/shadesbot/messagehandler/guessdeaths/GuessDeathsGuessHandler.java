@@ -2,6 +2,7 @@ package com.klazen.shadesbot.messagehandler.guessdeaths;
 
 import java.util.regex.Matcher;
 
+import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.Person;
 import com.klazen.shadesbot.ShadesBot;
@@ -14,7 +15,7 @@ public class GuessDeathsGuessHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (cooldownReady) {
 			int bet = 0;
 			

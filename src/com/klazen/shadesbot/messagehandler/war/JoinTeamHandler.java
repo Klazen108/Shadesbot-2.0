@@ -2,6 +2,7 @@ package com.klazen.shadesbot.messagehandler.war;
 
 import java.util.regex.Matcher;
 
+import com.klazen.shadesbot.MessageOrigin;
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.messagehandler.SimpleMessageHandler;
@@ -14,7 +15,12 @@ public class JoinTeamHandler extends SimpleMessageHandler {
 	}
 
 	@Override
-	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender) {
+	protected boolean onMessage(String username, boolean isMod, boolean cooldownReady, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
+		if (origin != MessageOrigin.IRC) {
+			sender.sendMessage("Please join from the Twitch channel, as we use your twitch name to track points.", false);
+			return false;
+		}
+		
 		WarEntry currentWar = bot.getWarPlugin().getCurrentWar();
 		if (currentWar == null) {
 			sender.sendMessage("There isn't a war going on right now.", false);
