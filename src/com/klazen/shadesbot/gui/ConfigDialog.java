@@ -19,7 +19,9 @@ import java.awt.Insets;
 import javax.swing.JCheckBox;
 
 import com.klazen.shadesbot.BotConfig;
+import com.klazen.shadesbot.PluginNotRegisteredException;
 import com.klazen.shadesbot.ShadesBot;
+import com.klazen.shadesbot.plugin.markov.MarkovPlugin;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -123,7 +125,11 @@ public class ConfigDialog extends JDialog implements ActionListener, WindowListe
 			btnClearMarkovModel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the Markov model?\nThis will reset it to an empty state,  and cannot be undone.", "Are you sure?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE)==JOptionPane.YES_OPTION) {
-						bot.getMarkov().clear();
+						try {
+							bot.getPlugin(MarkovPlugin.class).clear();
+						} catch (PluginNotRegisteredException ee) {
+							JOptionPane.showMessageDialog(null, "Unable to clear Markov Chain: The plugin was not found!");
+						}
 					}
 				}
 			});

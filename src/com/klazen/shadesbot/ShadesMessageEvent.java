@@ -4,8 +4,6 @@ import org.pircbotx.hooks.events.MessageEvent;
 
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 
-import org.pircbotx.User;
-
 public class ShadesMessageEvent {
 	final private String message;
 	final private boolean isOp;

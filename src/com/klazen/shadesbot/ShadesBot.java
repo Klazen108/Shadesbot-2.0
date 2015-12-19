@@ -36,12 +36,7 @@ import org.pircbotx.hooks.events.PrivateMessageEvent;
 import org.pircbotx.hooks.events.ServerResponseEvent;
 import org.reflections.Reflections;
 
-import com.klazen.shadesbot.markov.MarkovChain;
-import com.klazen.shadesbot.messagehandler.*;
-import com.klazen.shadesbot.messagehandler.guessdeaths.*;
-import com.klazen.shadesbot.messagehandler.race.Race;
-import com.klazen.shadesbot.messagehandler.rps.RockPaperScissors;
-import com.klazen.shadesbot.messagehandler.war.WarPlugin;
+import com.klazen.shadesbot.plugin.*;
 
 import sx.blah.discord.DiscordClient;
 import sx.blah.discord.handle.IListener;
@@ -76,25 +71,11 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	Map<String,Long> uSet;
 	
 	List<SimpleMessageHandler> handlers;
+	Map<Class<? extends Plugin>,Plugin> plugins;
 
 	Random randomGen;
 	
 	BotConsole console;
-	
-	//Plugins
-	GuessController guessController;
-	
-	Race race;
-	
-	WarPlugin war;
-	
-	RockPaperScissors rps = null;
-	boolean rpsStarted=false;
-	
-	int snurdeepsCounter;
-	public final int SNURDEEPS_TRIGGER_THRESHOLD = 100;
-	MarkovChain markov;
-	String markovFile;
 
 	TwitchInterface twitchInterface;
 	String twitchFile;
@@ -102,7 +83,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	public ShadesBot(BotConsole console, BotConfig config) throws ClassNotFoundException, IOException  {
 		this.console = console;
 		this.userFile = "usersFile";
-		this.markovFile = "markovFile";
 		this.twitchFile = "twitchFile";
 		
 		this.config = config;
@@ -114,14 +94,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			System.out.println(e.getLocalizedMessage());
 			personMap = new HashMap<>(100);
 		}
-		
-		try {
-			markov = (MarkovChain)loadObject(markovFile);
-		} catch (Exception e) {
-			System.out.println("Failed to load markov chain from "+markovFile);
-			System.out.println(e.getLocalizedMessage());
-			markov = new MarkovChain();
-		}
 
 		try {
 			twitchInterface = (TwitchInterface)loadObject(twitchFile);
@@ -129,37 +101,21 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			System.out.println("Failed to load twitch settings from "+twitchFile);
 			System.out.println(e.getLocalizedMessage());
 		}
-
-		war = new WarPlugin(this);
-		try {
-			war.onLoad();
-		} catch (Exception e) {
-			System.out.println("Failed to load waifu data");
-			System.out.println(e.getLocalizedMessage());
-		}
 		
 		userlistPattern = Pattern.compile(".+?"+config.getChannel()+" :(.+?)");
-		
-		guessController = new GuessController(this);
 		
 		randomGen = new Random(System.currentTimeMillis());
 		
 		uSet = new ConcurrentHashMap<String,Long>();
 		
-		handlers = new LinkedList<SimpleMessageHandler>();
-		//Use reflection to load all handlers
-		Reflections reflections = new Reflections("com.klazen.shadesbot.messagehandler");
-	    Set<Class<? extends SimpleMessageHandler>> subTypes = reflections.getSubTypesOf(SimpleMessageHandler.class);
-	    for (Class<? extends SimpleMessageHandler> curClass : subTypes) {
-	    	try {
-				handlers.add(curClass.getConstructor(ShadesBot.class).newInstance(this));
-			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				console.printLine(null,"Error loading message handler: " + curClass.getCanonicalName());
-				console.printLine(null,e.getMessage());
-				e.printStackTrace();
-			}
+		loadMessageHandlers();
+		loadPlugins();
+	    
+	    for (Plugin curPlugin : plugins.values()) {
+	    	curPlugin.init(this);
+	    	curPlugin.onLoad();
 	    }
-
+	    
 		Timer timer = new Timer();
 		timer.schedule(new AutoXPTask(), AUTO_XP_TIME, AUTO_XP_TIME);
 		timer = new Timer();
@@ -175,6 +131,39 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		//when starting the JVM
 		//if this prints as ???????? then you didn't do it
 		System.out.println("UTF 8 Test: ヽ༼■ل͜■༽ﾉ");
+	}
+	
+	private void loadMessageHandlers() {
+		handlers = new LinkedList<SimpleMessageHandler>();
+		//Use reflection to load all handlers
+		Reflections reflections = new Reflections("com.klazen.shadesbot.plugin");
+	    Set<Class<? extends SimpleMessageHandler>> subTypes = reflections.getSubTypesOf(SimpleMessageHandler.class);
+	    for (Class<? extends SimpleMessageHandler> curClass : subTypes) {
+	    	try {
+				handlers.add(curClass.getConstructor(ShadesBot.class).newInstance(this));
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				console.printLine(null,"Error loading message handler: " + curClass.getCanonicalName());
+				console.printLine(null,e.getMessage());
+				e.printStackTrace();
+			}
+	    }
+	}
+	
+	private void loadPlugins() {
+		plugins = new HashMap<Class<? extends Plugin>,Plugin>();
+		//Use reflection to load all plugins
+		Reflections reflections = new Reflections("com.klazen.shadesbot.plugin");
+	    Set<Class<? extends Plugin>> pluginSubtypes = reflections.getSubTypesOf(Plugin.class);
+	    for (Class<? extends Plugin> curClass : pluginSubtypes) {
+	    	try {
+				plugins.put(curClass,curClass.getConstructor().newInstance());
+				System.out.println("Initialized plugin: "+curClass.getCanonicalName());
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				console.printLine(null,"Error loading plugin: " + curClass.getCanonicalName());
+				console.printLine(null,e.getMessage());
+				e.printStackTrace();
+			}
+	    }
 	}
 	
 	public static ShadesBot start(BotConsole console, BotConfig config) throws ClassNotFoundException, IOException, IrcException {
@@ -198,7 +187,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			e.printStackTrace();
 		} catch (IrcException e) {
 			e.printStackTrace();
-		}}}).start(); 
+		}}},"PircBotX").start(); 
 		
 		if (config.doUseDiscord()) {
 			try {
@@ -328,17 +317,10 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		Person p = getPerson(event.getUser());
 		p.addMoneyFromChatting();
 		
-		war.pointsFromChat(event.getUser());
-		
 		if (p.isIgnored()) return;
-		
-		if (!event.getMessage().startsWith("!")) markov.addWords(event.getMessage());
-		if (config.isSnurdeepsMode()) {
-			snurdeepsCounter++;
-			if (snurdeepsCounter > SNURDEEPS_TRIGGER_THRESHOLD) {
-				snurdeepsCounter = 0;
-				event.getSender().sendMessage(markov.generateSentence(), true);
-			}
+
+		for (Plugin curPlugin : plugins.values()) {
+			curPlugin.onMessage(this, event);
 		}
 		
 		for (SimpleMessageHandler curHandler : handlers) {
@@ -346,67 +328,41 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		}
 	}
 	
+	public <T extends Plugin> T getPlugin(Class<T> pluginType) throws PluginNotRegisteredException {
+		@SuppressWarnings("unchecked")
+		T plugin = (T) plugins.get(pluginType);
+		if (plugin == null) throw new PluginNotRegisteredException();
+		else return plugin;
+	}
+	
 	public void safetySave() throws IOException {
 		synchronized (personMap) {
 			saveObject(userFile,personMap);
 		}
-		synchronized (markov) {
-			saveObject(markovFile,markov);
-		}
-		synchronized (war) {
-			war.onSave();
+		for (Plugin curPlugin : plugins.values()) {
+			curPlugin.onSave();
 		}
 	}
 	
 	public void onDisconnect() {
 		System.out.println("Closing...");
 		try {
-			guessController.clearGuesses();
-			
 			saveObject(userFile,personMap);
 			System.out.println("User data saved.");
 			config.save();
 			System.out.println("Config saved.");
-			saveObject(markovFile,markov);
-			System.out.println("Markov data saved.");
 			if (twitchInterface != null) {
 				saveObject(twitchFile,twitchInterface);
 				System.out.println("Twitch data saved.");
 			}
-			war.onSave();
+			for (Plugin curPlugin : plugins.values()) {
+				curPlugin.onSave();
+			}
 			System.out.println("War data saved.");
 		} catch (IOException e) {
 			System.err.println("Error saving data!"+e.getLocalizedMessage());
 			e.printStackTrace();
 		}
-	}
-	
-	public void startRPS(MessageSender sender) {
-		if (!rpsStarted) {
-			rps = new RockPaperScissors(this,sender);
-			Thread t = new Thread(rps);
-			t.start();
-			rpsStarted=true;
-		}
-	}
-	
-	public void addRPSParticipant(String user, String choice, int bet) {
-		if (rpsStarted) {
-			rps.addParticipant(user, choice, bet);
-		}
-	}
-	
-	public void endRPS() {
-		rps=null;
-		rpsStarted=false;
-	}
-	
-	public void setRace(Race race) {
-		this.race = race;
-	}
-	
-	public Race getRace() {
-		return race;
 	}
 	
 	public Person getPerson(String username) {
@@ -428,10 +384,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		return personMap;
 	}
 	
-	public WarPlugin getWarPlugin() {
-		return war;
-	}
-	
 	public Object loadObject(String filename) throws IOException, FileNotFoundException, ClassNotFoundException {
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
 			return ois.readObject();
@@ -451,6 +403,13 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		return name.substring(0, 1).toUpperCase() + name.substring(1);
 	}
 	
+	/**
+	 * Sends a message over IRC
+	 * This is public for use by the GUI, but you should prefer using a MessageSender wherever possible, instead of direct access
+	 * to this method.
+	 * 
+	 * @param message the message to send
+	 */
 	public void sendMessage(String message) {
 		Channel channel = bot.getUserChannelDao().getChannel(config.getChannel());
 		if (channel != null) {
@@ -462,7 +421,14 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			}
 		}
 	}
-	
+
+	/**
+	 * Sends a message over Discord
+	 * This is public for use by the GUI, but you should prefer using a MessageSender wherever possible, instead of direct access
+	 * to this method.
+	 * 
+	 * @param message the message to send
+	 */
 	public void sendMessageDiscord(String message, sx.blah.discord.handle.obj.Channel c, boolean withTTS) {
 		MessageBuilder mb = new MessageBuilder().appendContent(message).withChannel(c);
 		if (withTTS) mb.withTTS();
@@ -518,12 +484,12 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		return config.getChannel();
 	}
 	
-	public MarkovChain getMarkov() {
-		return markov;
-	}
-	
 	public BotConfig getConfig() {
 		return config;
+	}
+	
+	public Set<String> getChatParticipants() {
+		return uSet.keySet();
 	}
 	
 	public void setEnabled(boolean enabled) {
@@ -535,10 +501,10 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	public boolean isEnabled() {
 		return enabled;
 	}
-	
+	/*
 	public GuessController getGuessController() {
 		return guessController;
-	}
+	}*/
 		
 	/**
 	 * Updates userlist & distributes XP to active participants
@@ -558,7 +524,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 					}
 					console.updateUserList(uSet.keySet());
 				}
-				if (enabled) war.pointsFromTimer(uSet.keySet());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -1,7 +1,7 @@
 eclipse.preferences.version=1
 encoding//src/com/klazen/shadesbot/ShadesBot.java=UTF-8
-encoding//src/com/klazen/shadesbot/messagehandler/GiveShadesHandler.java=UTF-8
-encoding//src/com/klazen/shadesbot/messagehandler/HelpfulCommandsHandler.java=UTF-8
-encoding//src/com/klazen/shadesbot/messagehandler/MagicEightBotHandler.java=UTF-8
-encoding//src/com/klazen/shadesbot/messagehandler/ShadesHandler.java=UTF-8
-encoding//src/com/klazen/shadesbot/messagehandler/WelcomeHandler.java=UTF-8
+encoding//src/com/klazen/shadesbot/plugin/GiveShadesHandler.java=UTF-8
+encoding//src/com/klazen/shadesbot/plugin/HelpfulCommandsHandler.java=UTF-8
+encoding//src/com/klazen/shadesbot/plugin/MagicEightBotHandler.java=UTF-8
+encoding//src/com/klazen/shadesbot/plugin/ShadesHandler.java=UTF-8
+encoding//src/com/klazen/shadesbot/plugin/WelcomeHandler.java=UTF-8
