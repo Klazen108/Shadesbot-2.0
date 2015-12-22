@@ -205,7 +205,7 @@ public class WarPlugin implements Plugin {
 
 	@Override
 	public void onMessage(ShadesBot bot, ShadesMessageEvent event) {
-		pointsFromChat(event.getUser());
+		if (bot.isEnabled()) pointsFromChat(event.getUser());
 	}
 
 	class PointsTask extends TimerTask {

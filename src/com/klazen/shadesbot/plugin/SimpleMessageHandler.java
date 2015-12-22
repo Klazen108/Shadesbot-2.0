@@ -35,6 +35,7 @@ public abstract class SimpleMessageHandler {
 	}
 	
 	/**
+	 * This is only called if the bot is currently enabled.
 	 * 
 	 * @param username
 	 * @param isMod

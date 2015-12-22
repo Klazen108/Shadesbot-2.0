@@ -45,6 +45,8 @@ public interface Plugin {
 	 * handles some of the internal stuff for you. However, if your plugin needs complete control, this listener is provided.
 	 * 
 	 * NOTE: All plugins' onMessage methods are called before all message handlers' handleMessage methods.
+	 * NOTE: onMessage is called even if the bot is disabled! Check {@link ShadesBot#isEnabled()} if you want to only 
+	 * handle messages when the bot is enabled.
 	 * @param bot
 	 * @param event
 	 */

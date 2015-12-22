@@ -303,6 +303,16 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			}
 		}
 		
+		//before offline check to allow plugins to work even if bot is offline
+		for (Plugin curPlugin : plugins.values()) {
+			//wrap each onMessage individually so one can fail and the rest can run
+			try {
+				curPlugin.onMessage(this, event);
+			} catch (Exception e) {
+				log.error("Exception thrown while processing plugin message handler!",e);
+			}
+		}
+		
 		if (!isEnabled()) {
 			if ((isAdmin(event.getUser()) || event.isOp()) && event.getMessage().equalsIgnoreCase("!shadesbot on")) {
 				event.getSender().sendMessage("ShadesBot 2.0 is online! ヽ༼⌐■ل͜■༽ﾉ", false);
@@ -323,15 +333,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		p.addMoneyFromChatting();
 		
 		if (p.isIgnored()) return;
-
-		for (Plugin curPlugin : plugins.values()) {
-			//wrap each onMessage individually so one can fail and the rest can run
-			try {
-				curPlugin.onMessage(this, event);
-			} catch (Exception e) {
-				log.error("Exception thrown while processing plugin message handler!",e);
-			}
-		}
 		
 		for (SimpleMessageHandler curHandler : handlers) {
 			//wrap each onMessage individually so one can fail and the rest can run

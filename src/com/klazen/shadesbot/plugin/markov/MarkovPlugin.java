@@ -9,6 +9,7 @@ import java.util.Random;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -125,6 +126,7 @@ public class MarkovPlugin implements Plugin {
 
 	@Override
 	public void onSave() {
+		log.trace("Saving markov chain");
 		try {
 		    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 	        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -157,9 +159,12 @@ public class MarkovPlugin implements Plugin {
 			
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	        Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 	        DOMSource source = new DOMSource(document);
 	        StreamResult result = new StreamResult(new FileOutputStream(new File("markov.xml")));
 	        transformer.transform(source, result);
+			log.trace("Markov chain saved.");
 		} catch (Exception e) {
 			log.error("Error serializing Markov XML document to file!",e);
 		}
@@ -211,7 +216,9 @@ public class MarkovPlugin implements Plugin {
 
 	@Override
 	public void onMessage(ShadesBot bot, ShadesMessageEvent event) {
-		if (!event.getMessage().startsWith("!")) addWords(event.getMessage());
+		//only add words when online
+		if (bot.isEnabled() && !event.getMessage().startsWith("!")) addWords(event.getMessage());
+		//make messages even if offline
 		if (bot.getConfig().isSnurdeepsMode()) {
 			snurdeepsCounter++;
 			if (snurdeepsCounter > SNURDEEPS_TRIGGER_THRESHOLD) {
