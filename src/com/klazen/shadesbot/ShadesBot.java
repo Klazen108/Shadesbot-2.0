@@ -119,8 +119,12 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		log.info("Plugins Loaded.");
 	    
 	    for (Plugin curPlugin : plugins.values()) {
-	    	curPlugin.init(this);
-	    	curPlugin.onLoad();
+	    	try {
+		    	curPlugin.init(this);
+		    	curPlugin.onLoad();
+	    	} catch (Exception e) {
+	    		log.error("Error initializing plugin "+curPlugin.getClass().getCanonicalName(),e);
+	    	}
 	    }
 	    
 		Timer timer = new Timer();
@@ -294,7 +298,17 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	};
 	
 	private void handleMessage(ShadesMessageEvent event, boolean ircMode) {
-		console.printLine(event.getUser(),event.getMessage());
+		switch (event.getOrigin()) {
+		case IRC:
+			console.printLine("[I]"+event.getUser(),event.getMessage());
+			break;
+		case Discord:
+			console.printLine("[D]"+event.getUser(),event.getMessage());
+			break;
+		default:
+			console.printLine("[?]"+event.getUser(),event.getMessage());
+			break;
+		}
 
 		if (event.origin == MessageOrigin.IRC) {
 			synchronized (uSet) {
