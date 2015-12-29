@@ -27,12 +27,14 @@ import twitter4j.conf.ConfigurationBuilder;
 public class TwitterPlugin implements Plugin {
 	public final Logger log = Logger.getLogger(getClass());
 	
-	boolean enabled = false;
-	String accessToken = "";
-	String accessTokenSecret = "";
-	String consumerKey = "";
-	String consumerSecret = "";
+	private boolean enabled = false;
+	private String accessToken = "";
+	private String accessTokenSecret = "";
+	private String consumerKey = "";
+	private String consumerSecret = "";
 	public static final String FILENAME = "twitterConfig";
+
+	private TwitterFactory factory = null;
 
 	@Override
 	public void onSave() {
@@ -187,14 +189,17 @@ public class TwitterPlugin implements Plugin {
 		}
 		Twitter twitter = null;
 		try {
-	        ConfigurationBuilder cb = new ConfigurationBuilder();
-	        cb.setDebugEnabled(true)
-		      .setOAuthConsumerKey(consumerKey)
-		      .setOAuthConsumerSecret(consumerSecret)
-		      .setOAuthAccessToken(accessToken)
-		      .setOAuthAccessTokenSecret(accessTokenSecret);
-            TwitterFactory tf = new TwitterFactory(cb.build());
-            twitter = tf.getInstance();
+			//lazy build of factory - only when you first use it, only once
+			if (factory == null) {
+		        ConfigurationBuilder cb = new ConfigurationBuilder();
+		        cb.setDebugEnabled(true)
+			      .setOAuthConsumerKey(consumerKey)
+			      .setOAuthConsumerSecret(consumerSecret)
+			      .setOAuthAccessToken(accessToken)
+			      .setOAuthAccessTokenSecret(accessTokenSecret);
+	            factory = new TwitterFactory(cb.build());
+			}
+            twitter = factory.getInstance();
             
     		log.info("Sending Tweet: "+message);
 	        twitter.updateStatus(message);
@@ -205,6 +210,7 @@ public class TwitterPlugin implements Plugin {
                     log.error("Auth credentials were not set!");
                 }
             }
+            factory = null; //remove the factory to see if rebuilding it next time helps
             throw new TweetException(e);
         }
 	}

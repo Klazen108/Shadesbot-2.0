@@ -126,6 +126,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	    		log.error("Error initializing plugin "+curPlugin.getClass().getCanonicalName(),e);
 	    	}
 	    }
+		log.info("Plugins Initialized.");
 	    
 		Timer timer = new Timer();
 		timer.schedule(new AutoXPTask(), AUTO_XP_TIME, AUTO_XP_TIME);

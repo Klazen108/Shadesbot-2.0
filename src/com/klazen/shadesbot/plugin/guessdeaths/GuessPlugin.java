@@ -121,8 +121,8 @@ public class GuessPlugin implements Plugin {
 				sender.sendMessage("We have a winner! Congratulations, "+winners + "! "+POINTS_FOR_GUESSING+" points have been awarded to your teams for each correct guess.",false);
 				
 				try {
-					TwitterPlugin plugin = bot.getPlugin(TwitterPlugin.class);
-					plugin.tweet(winners+" just correctly guesed the number of deaths in today's run! ヽ༼■ل͜■༽ﾉ");
+					TwitterPlugin twitter = bot.getPlugin(TwitterPlugin.class);
+					if (twitter != null) twitter.tweet(winners+" just correctly guesed the number of deaths in today's run! ヽ༼■ل͜■༽ﾉ");
 				} catch (Exception e) {
 					log.error("Error occurred while tweeting guess deaths announcement!",e);
 				}

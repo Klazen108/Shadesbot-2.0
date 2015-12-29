@@ -30,8 +30,8 @@ public class CommitHandler extends SimpleMessageHandler {
 				sender.sendMessage("A new war has begun! Good luck!", false);
 				WarEntry currentWar = warPlugin.getCurrentWar();
 				try {
-					TwitterPlugin plugin = bot.getPlugin(TwitterPlugin.class);
-					plugin.tweet("A new war has begun between "+currentWar.teamA+" and "+currentWar.teamB+", ending on "+sdfTweet.format(currentWar.endDate)+"! Pick your sides now!");
+					TwitterPlugin twitter = bot.getPlugin(TwitterPlugin.class);
+					if (twitter != null) twitter.tweet("A new war has begun between "+currentWar.teamA+" and "+currentWar.teamB+", ending on "+sdfTweet.format(currentWar.endDate)+"! Pick your sides now!");
 				} catch (Exception e) {
 					log.error("Error occurred while tweeting war announcement!",e);
 				}
