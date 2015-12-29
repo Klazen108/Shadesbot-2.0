@@ -23,7 +23,7 @@ public class SplatoonPlugin implements Plugin {
 	
 	public static final String API_ENDPOINT = "https://splatoon.ink/schedule.json";
 	SimpleDateFormat sdf = new SimpleDateFormat("ha z");
-	public static final int OFFSET_TIME = 60000;
+	public static final int OFFSET_TIME = 30 * 60 * 1000;
 	
 	long lastRequestTime = 0;
 	
@@ -82,6 +82,7 @@ public class SplatoonPlugin implements Plugin {
 		    resp += rotations[curIndex].turfMode+": "+String.join(", ", rotations[curIndex].turfMaps)+"\\n";
 		    resp += rotations[curIndex].rankedMode+": "+String.join(", ", rotations[curIndex].rankedMaps)+"\\n";
 	    } catch (Exception e) {
+	    	log.warn("Exception caught while trying to print current rotation:",e);
 	    	resp = "Couldn't get current rotation data!";
 	    }
 	    return resp;
@@ -100,6 +101,7 @@ public class SplatoonPlugin implements Plugin {
 		    resp += rotations[curIndex].turfMode+": "+String.join(", ", rotations[curIndex].turfMaps)+"\\n";
 		    resp += rotations[curIndex].rankedMode+": "+String.join(", ", rotations[curIndex].rankedMaps)+"\\n";
 	    } catch (Exception e) {
+	    	log.warn("Exception caught while trying to print next rotation:",e);
 	    	resp = "Couldn't get current rotation data!";
 	    }
 	    return resp;
@@ -109,9 +111,9 @@ public class SplatoonPlugin implements Plugin {
 		long currentTime = new Date().getTime();
 		//only check if we've passed the end time for this rotation, and don't spam requests
 		long endTime = 0;
-		if (rotations != null && rotations.length>1) endTime = rotations[rotations.length-1].endTime;
+		if (rotations != null && rotations.length>1) endTime = rotations[rotations.length-2].endTime;
 		
-		if ((currentTime > endTime - OFFSET_TIME) && (lastRequestTime < currentTime - OFFSET_TIME)) {
+		if ((new Date().getTime() > endTime) || lastRequestTime < currentTime - OFFSET_TIME) {
 			log.info("Refreshing rotation data from Splatoon API");
 			log.trace("Requesting schedule update from splatoon API, "+API_ENDPOINT);
 			lastRequestTime = currentTime;

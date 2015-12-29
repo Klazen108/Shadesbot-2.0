@@ -626,7 +626,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 						log.warn("Disconnected from Discord. Attempting reconnect.");
 						DiscordClient.get().login(config.getDiscordUser(),config.getDiscordPass());
 						discordRetryCount = DISCORD_RETRY_COUNT;
-					} catch (IOException | ParseException | URISyntaxException e) {
+					} catch (Exception e) {
 						log.warn("Error reconnecting to discord!",e);
 						discordRetryCount-=1;
 						if (discordRetryCount>0) {
