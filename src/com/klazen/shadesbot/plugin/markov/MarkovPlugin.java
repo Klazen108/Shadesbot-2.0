@@ -25,6 +25,7 @@ import org.w3c.dom.NodeList;
 import com.klazen.shadesbot.Plugin;
 import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.ShadesMessageEvent;
+import com.klazen.shadesbot.plugin.twitter.TwitterPlugin;
  
 public class MarkovPlugin implements Plugin {
 	
@@ -223,7 +224,15 @@ public class MarkovPlugin implements Plugin {
 			snurdeepsCounter++;
 			if (snurdeepsCounter > SNURDEEPS_TRIGGER_THRESHOLD) {
 				snurdeepsCounter = 0;
-				event.getSender().sendMessage(generateSentence(), true);
+				String sentence = generateSentence();
+				event.getSender().sendMessage(sentence, true);
+				
+				try {
+					TwitterPlugin plugin = bot.getPlugin(TwitterPlugin.class);
+					plugin.tweet(sentence);
+				} catch (Exception e) {
+					log.error("Error occurred while tweeting markov sentence!",e);
+				}
 			}
 		}
 	}

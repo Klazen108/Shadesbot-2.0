@@ -10,15 +10,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.klazen.shadesbot.MessageSender;
 import com.klazen.shadesbot.Plugin;
 import com.klazen.shadesbot.PluginNotRegisteredException;
 import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.ShadesMessageEvent;
+import com.klazen.shadesbot.plugin.twitter.TwitterPlugin;
 import com.klazen.shadesbot.plugin.war.WarEntry;
 import com.klazen.shadesbot.plugin.war.WarPlugin;
 
 public class GuessPlugin implements Plugin {
+	
+	static Logger log = LoggerFactory.getLogger(GuessPlugin.class);
+	
 	public static final double MATCH_MULTIPLIER = 10;
 	public static final double OFF_BY_2_MULTIPLIER = 2;
 	public static final double OFF_BY_6_MULTIPLIER = 1;
@@ -112,6 +119,13 @@ public class GuessPlugin implements Plugin {
 			
 			if (!winners.isEmpty()) {
 				sender.sendMessage("We have a winner! Congratulations, "+winners + "! "+POINTS_FOR_GUESSING+" points have been awarded to your teams for each correct guess.",false);
+				
+				try {
+					TwitterPlugin plugin = bot.getPlugin(TwitterPlugin.class);
+					plugin.tweet(winners+" just correctly guesed the number of deaths in today's run! ヽ༼■ل͜■༽ﾉ");
+				} catch (Exception e) {
+					log.error("Error occurred while tweeting guess deaths announcement!",e);
+				}
 			} else {
 		    	sender.sendMessage("No one guessed correctly, but "+sdGuesser+" guessed the closest with "+sdGuess+" deaths!",false);
 	        }
