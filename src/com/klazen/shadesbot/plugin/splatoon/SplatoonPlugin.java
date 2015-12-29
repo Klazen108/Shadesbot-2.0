@@ -8,7 +8,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

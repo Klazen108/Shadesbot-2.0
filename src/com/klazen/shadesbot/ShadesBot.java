@@ -85,6 +85,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	String twitchFile;
 	
 	public ShadesBot(BotConsole console, BotConfig config) throws ClassNotFoundException, IOException  {
+		log.info("Hello from Shadesbot's Constructor!");
 		this.console = console;
 		this.userFile = "usersFile";
 		this.twitchFile = "twitchFile";
@@ -195,6 +196,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
         zbot.setBot(bot);
 		new Thread(new Runnable() {public void run() {try {
 			bot.startBot();
+			log.info("Started PircBotX");
 		} catch (IOException | IrcException e) {
 			log.error("Error starting bot thread!",e);
 		}}},"PircBotX").start(); 
@@ -202,6 +204,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		if (config.doUseDiscord()) {
 			try {
 				zbot.connectDiscord();
+				log.info("Started Discord");
 			} catch (ParseException | URISyntaxException e) {
 				console.printLineItalic(null, "Unable to connect to the discord server!");
 				log.warn("Unable to connect to the discord server!",e);
@@ -396,6 +399,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			log.error("Error saving data!",e);
 			e.printStackTrace();
 		}
+		log.info("Safe to shutdown. Bye!");
 	}
 	
 	public Person getPerson(String username) {

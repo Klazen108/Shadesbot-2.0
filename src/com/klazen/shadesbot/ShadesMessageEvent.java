@@ -1,5 +1,6 @@
 package com.klazen.shadesbot;
 
+import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.events.MessageEvent;
 
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
@@ -11,7 +12,7 @@ public class ShadesMessageEvent {
 	final MessageSender sender;
 	final MessageOrigin origin;
 	
-	public ShadesMessageEvent(MessageEvent event, MessageOrigin origin, MessageSender sender) {
+	public ShadesMessageEvent(MessageEvent<PircBotX> event, MessageOrigin origin, MessageSender sender) {
 		user = event.getUser().getNick();
 		message = event.getMessage();
 		isOp = event.getChannel().isOp(event.getUser());
