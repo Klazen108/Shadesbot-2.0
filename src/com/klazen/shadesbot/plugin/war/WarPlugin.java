@@ -111,8 +111,12 @@ public class WarPlugin implements Plugin {
 	}
 	
 	public synchronized WarEntry getLastWar() {
-		if (wars.size()<2) return null;
-		else return wars.lower(wars.last());
+		if (wars.isEmpty()) return null;
+		if (wars.last().endDate.getTime() < new Date().getTime()) return wars.last();
+		else {
+			if (wars.size()<2) return null;
+			else return wars.lower(wars.last());
+		}
 	}
 
 	public void pointsFromChat(String username) {
