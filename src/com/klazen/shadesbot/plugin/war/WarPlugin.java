@@ -21,11 +21,12 @@ import org.slf4j.LoggerFactory;
 import com.klazen.shadesbot.Plugin;
 import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.ShadesMessageEvent;
+import com.klazen.shadesbot.plugin.twitter.TwitterPlugin;
 
 public class WarPlugin implements Plugin {
 	public static final long POINTS_FROM_CHAT = 0; //No points from chat, TJ
 	public static final long POINTS_FROM_TIMER = 2;
-	public static final long POINTS_FROM_JOINING = 50;
+	public static final long POINTS_FROM_JOINING = 100;
 	public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
 	static Logger log = LoggerFactory.getLogger(WarPlugin.class);
@@ -192,6 +193,10 @@ public class WarPlugin implements Plugin {
 			
 			announcement = newAnnouncement;
 			wars = newEntries;
+
+			log.debug("Starting the TwitterAnnounceTask");
+			Timer timer = new Timer();
+			timer.schedule(new TwitterAnnounceTask(), 1, 1000 * 60 * 60); //announce the results immediately after loading, and recheck every hour if necessary to do again
 		} catch (Exception e) {
 			log.error("Error loading war file",e);
 		}
@@ -221,5 +226,39 @@ public class WarPlugin implements Plugin {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	class TwitterAnnounceTask extends TimerTask {
+		@Override
+		public void run() {
+			try {
+				log.debug("TwitterAnnounceTask running now...");
+				WarEntry entry = getLastWar();
+				if (entry != null && !entry.completed) {
+					log.info("War between {} and {} just ended, announcing!",entry.teamA,entry.teamB);
+					entry.completed = true;
+					try {
+						TwitterPlugin twitter = bot.getPlugin(TwitterPlugin.class);
+						if (twitter != null) twitter.tweet(getWarResults(entry));
+					} catch (Exception e) {
+						log.error("Error occurred while tweeting war results!",e);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static String getWarResults(WarEntry lastWar) {
+		String msg;
+		if (lastWar.pointsA > lastWar.pointsB) {
+			msg = "The last war resulted in a victory for team "+lastWar.teamA+", with "+lastWar.pointsA+" points and "+lastWar.membersA.size()+" backers over "+lastWar.teamB+", who had "+lastWar.pointsB+" points and "+lastWar.membersB.size()+" backers!";
+		} else if (lastWar.pointsB > lastWar.pointsA) {
+			msg = "The last war resulted in a victory for team "+lastWar.teamB+", with "+lastWar.pointsB+" points and "+lastWar.membersB.size()+" backers over "+lastWar.teamA+", who had "+lastWar.pointsA+" points and "+lastWar.membersA.size()+" backers!";
+		} else {
+			msg = "The last war resulted in a perfect tie! Teams "+lastWar.teamA+", with "+lastWar.membersA.size()+" backers and "+lastWar.teamB+", with "+lastWar.membersB.size()+" backers both managed to accumulate "+lastWar.pointsA+" points!";
+		}
+		return msg;
 	}
 }

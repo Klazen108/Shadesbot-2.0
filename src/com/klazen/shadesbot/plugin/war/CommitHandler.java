@@ -15,7 +15,7 @@ import com.klazen.shadesbot.plugin.twitter.TwitterPlugin;
 public class CommitHandler extends SimpleMessageHandler {
 	
 	static Logger log = LoggerFactory.getLogger(CommitHandler.class);
-	static SimpleDateFormat sdfTweet = new SimpleDateFormat("yyyy-mm-dd");
+	static SimpleDateFormat sdfTweet = new SimpleDateFormat("yyyy-MM-dd");
 	
 
 	public CommitHandler(ShadesBot bot) {

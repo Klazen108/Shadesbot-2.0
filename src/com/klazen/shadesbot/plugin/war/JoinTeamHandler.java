@@ -24,20 +24,23 @@ public class JoinTeamHandler extends SimpleMessageHandler {
 		WarEntry currentWar = bot.getPlugin(WarPlugin.class).getCurrentWar();
 		if (currentWar == null) {
 			sender.sendMessage("There isn't a war going on right now.", false);
+			return true;
 		} else {
 			if (currentWar.getTeamForUser(username) != Team.NONE) {
 				sender.sendMessage(username+", you're already on Team "+currentWar.getTeamNameForUser(username)+"! No takesies-backsies!", false);
+				return true;
 			} else {
 				Team choice = currentWar.getTeamForTeamName(m.group(1));
 				if (choice != Team.NONE) {
 					bot.getPlugin(WarPlugin.class).stageJoin(username, choice);
 					sender.sendMessage(username+", you are about to declare your loyalty to Team "+currentWar.getTeamNameForTeam(choice)+"! If you are sure, type !commitJoin to finalize your decision!", false);
+					return false;
 				} else {
 					sender.sendMessage("Sorry, "+username+", I don't know what team that is. Try checking with !currentwar to see the team names and try again later.", false);
+					return true;
 				}
 			}
 		}
-		return true;
 	}
 
 }

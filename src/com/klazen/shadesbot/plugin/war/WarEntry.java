@@ -8,6 +8,9 @@ import java.util.Set;
 import com.klazen.shadesbot.plugin.war.WarPlugin.Team;
 
 public class WarEntry implements Comparable<WarEntry> {
+	/** set to true when the war has been completed and announced (typically to twitter) */
+	boolean completed;
+	
 	Date startDate;
 	final Date endDate;
 	final String teamA;
@@ -22,7 +25,12 @@ public class WarEntry implements Comparable<WarEntry> {
 	}
 
 	private WarEntry(String teamA, String teamB, Date startDate, Date endDate, long pointsA, long pointsB) {
+		this(teamA,teamB,startDate,endDate,0,0,false);
+	}
+
+	private WarEntry(String teamA, String teamB, Date startDate, Date endDate, long pointsA, long pointsB, boolean completed) {
 		if (endDate == null) throw new IllegalArgumentException("End Date must not be null.");
+		this.completed = completed;
 		this.teamA = teamA;
 		this.teamB = teamB;
 		this.endDate = endDate;
@@ -117,7 +125,8 @@ public class WarEntry implements Comparable<WarEntry> {
 	}
 	
 	public String toString() {
-		return WarPlugin.DATE_FORMAT.format(startDate) + ","
+		return (completed?"1":"0") + ","
+			 + WarPlugin.DATE_FORMAT.format(startDate) + ","
 		     + WarPlugin.DATE_FORMAT.format(endDate) + ","
 		     + teamA + ","
 		     + teamB + ","
@@ -130,16 +139,16 @@ public class WarEntry implements Comparable<WarEntry> {
 	public static WarEntry fromString(String serial) throws NumberFormatException, ParseException {
 		String[] sections = serial.split("\\|");
 		if (sections.length != 3) throw new IllegalArgumentException("Malformed input, must have 3 sections delimited by pipes | containing metadata, team a members, and team b members");
-		
 		String[] parameters = sections[0].split(",");
-		if (parameters.length != 6) throw new IllegalArgumentException("Malformed input, section 0 must have start date, end date, team names, and team points");
-		Date newStartDate = WarPlugin.DATE_FORMAT.parse(parameters[0]);
-		Date newEndDate = WarPlugin.DATE_FORMAT.parse(parameters[1]);
-		String newTeamA = parameters[2];
-		String newTeamB = parameters[3];
-		Long newPointsA = Long.parseLong(parameters[4].trim());
-		Long newPointsB = Long.parseLong(parameters[5].trim());
-		WarEntry newEntry = new WarEntry(newTeamA,newTeamB,newStartDate,newEndDate,newPointsA,newPointsB);
+		if (parameters.length != 7) throw new IllegalArgumentException("Malformed input, section 0 must have completion, start date, end date, team names, and team points");
+		boolean newCompleted = parameters[0].equals("1");
+		Date newStartDate = WarPlugin.DATE_FORMAT.parse(parameters[1]);
+		Date newEndDate = WarPlugin.DATE_FORMAT.parse(parameters[2]);
+		String newTeamA = parameters[3];
+		String newTeamB = parameters[4];
+		Long newPointsA = Long.parseLong(parameters[5].trim());
+		Long newPointsB = Long.parseLong(parameters[6].trim());
+		WarEntry newEntry = new WarEntry(newTeamA,newTeamB,newStartDate,newEndDate,newPointsA,newPointsB,newCompleted);
 		
 		for (String curMemberA : sections[1].split(",")) newEntry.joinTeam(curMemberA.trim(), Team.A);
 		for (String curMemberB : sections[2].split(",")) newEntry.joinTeam(curMemberB.trim(), Team.B);

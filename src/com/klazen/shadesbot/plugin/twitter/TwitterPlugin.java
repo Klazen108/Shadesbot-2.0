@@ -204,7 +204,7 @@ public class TwitterPlugin implements Plugin {
     		log.info("Sending Tweet: "+message);
 	        twitter.updateStatus(message);
         } catch (Exception e) {
-        	log.error("Error occurred while sending tweet!",e);
+        	//log.error("Error occurred while sending tweet!",e);
             if (twitter != null) {
                 if (!twitter.getAuthorization().isEnabled()) {
                     log.error("Auth credentials were not set!");
