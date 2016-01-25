@@ -24,6 +24,7 @@ public class BotConfig {
 	boolean useDiscord;
 	String discordUser;
 	String discordPass;
+	String discordMainChannelName;
 	
 	public String getDiscordUser() {
 		return discordUser;
@@ -39,6 +40,10 @@ public class BotConfig {
 	
 	public void setDoUseDiscord(boolean doUseDiscord) {
 		this.useDiscord = false;
+	}
+	
+	public String getDiscordMainChannelName() {
+		return discordMainChannelName;
 	}
 	
 	public static final int DEFAULT_PORT=6667;
@@ -63,6 +68,7 @@ public class BotConfig {
 		discordUser="";
 		discordPass="";
 		useDiscord=false;
+		discordMainChannelName="";
 	}
 	
 	public List<String> getAdmins() {
@@ -171,6 +177,7 @@ public class BotConfig {
 		p.put("useDiscord", useDiscord?"true":"false");
 		p.put("discordUser", discordUser);
 		p.put("discordPass", discordPass);
+		p.put("discordMainChannelName", discordMainChannelName);
 		
 		p.store(new FileWriter(filename), null);
 	}
@@ -202,5 +209,6 @@ public class BotConfig {
 		useDiscord = p.get("useDiscord").equals("true");
 		discordUser = (String)p.get("discordUser");
 		discordPass = (String)p.get("discordPass");
+		discordMainChannelName = (String)p.get("discordMainChannelName");
 	}
 }

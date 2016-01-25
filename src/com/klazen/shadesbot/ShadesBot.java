@@ -84,6 +84,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	TwitchInterface twitchInterface;
 	String twitchFile;
 	
+	String discordMainChannelID = "";
+	
 	public ShadesBot(BotConsole console, BotConfig config) throws ClassNotFoundException, IOException  {
 		log.info("Hello from Shadesbot's Constructor!");
 		this.console = console;
@@ -220,6 +222,10 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		
 		DiscordClient.get().getDispatcher().registerListener(new IListener<MessageReceivedEvent>() {
 			@Override public void receive(MessageReceivedEvent messageReceivedEvent) {
+				if (config.doUseDiscord() && config.getDiscordMainChannelName() != null && config.getDiscordMainChannelName().equals(messageReceivedEvent.getMessage().getChannel().getName())) {
+					discordMainChannelID = messageReceivedEvent.getMessage().getChannel().getID();
+				}
+				
 				ShadesMessageEvent sme = new ShadesMessageEvent(messageReceivedEvent, MessageOrigin.Discord, ((s,b) -> sendMessageDiscord(s,messageReceivedEvent.getMessage().getChannel(),b)));
 				handleMessage(sme,true);
 			}
@@ -491,6 +497,10 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		console.printLine("Shadesbot",message);
 	}
 	
+	public void sendMessageDiscordMain(String message, boolean withTTS) {
+		sendMessageDiscord(message, DiscordClient.get().getChannelByID(discordMainChannelID), withTTS);
+	}
+	
 	/**
 	 * Returns a random integer between 0 and upperbound, inclusive
 	 * @param upperbound The maximum value that can be returned
@@ -630,6 +640,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 					try {
 						log.warn("Disconnected from Discord. Attempting reconnect.");
 						DiscordClient.get().login(config.getDiscordUser(),config.getDiscordPass());
+						log.info("Reconnected to Discord?");
 						discordRetryCount = DISCORD_RETRY_COUNT;
 					} catch (Exception e) {
 						log.warn("Error reconnecting to discord!",e);
