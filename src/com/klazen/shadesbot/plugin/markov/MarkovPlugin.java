@@ -224,7 +224,12 @@ public class MarkovPlugin implements Plugin {
 			snurdeepsCounter++;
 			if (snurdeepsCounter > SNURDEEPS_TRIGGER_THRESHOLD) {
 				snurdeepsCounter = 0;
-				String sentence = generateSentence();
+				
+				//try 5 times to make a sentence until the length is at least 3
+				String sentence = "";
+				int counter = 5;
+				while ((sentence.split(" ").length < 3) && counter-->0) sentence = generateSentence();
+				
 				event.getSender().sendMessage(sentence, true);
 				
 				try {
