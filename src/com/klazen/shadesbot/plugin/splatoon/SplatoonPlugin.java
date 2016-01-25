@@ -152,6 +152,11 @@ public class SplatoonPlugin implements Plugin {
 			    	newRotations[i] = new SplatoonRotation(jo.getJSONArray("schedule").getJSONObject(i));
 			    }
 			    
+			    //write a log message
+			    SimpleDateFormat sdfLog = new SimpleDateFormat("MM/dd ha z");
+			    Date endDate = new Date(newRotations[newRotations.length-1].endTime);
+			    log.info("Rotation data valid until: "+sdfLog.format(endDate));
+			    
 			    rotations = newRotations;
 			    
 			    log.trace("Response parse complete.");

@@ -16,7 +16,7 @@ public class RunAdHandler extends SimpleMessageHandler {
 	@Override
 	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
 		if (isMod) {
-			switch (bot.irandom(10)) {
+			switch (bot.irandom(11)) {
 			case 0: sender.sendMessage("This stream brought to you by cool, crisp, refreshing Aquafina http://imgur.com/fJP3oJK", false); break;
 			case 1: sender.sendMessage("Today's stream paid for, in part, by Viewers Like You!", false); break;
 			case 2: sender.sendMessage("That last death was sponsored by Chick-fil-A Waffle Fries", false); break;
@@ -28,6 +28,7 @@ public class RunAdHandler extends SimpleMessageHandler {
 			case 8: sender.sendMessage("Celebrate lost PBs with a good ol' Arnold Palmer™ , the fastest way to drink away your sorrow. Arnold Palmer! Accept no substitutes!", false); break;
 			case 9: sender.sendMessage("Awnord.. Alrnrod Pawme... Alnord Parlmer's, now in Low Sodium!", false); break;
 			case 10: sender.sendMessage("Munchos, Munchos, Munchos are delicio... Matt you're getting timed out", false); break;
+			case 11: sender.sendMessage("There's nothing better than a nice, luscious waffle cooked lovingly by the chef who's trying to seduce me at the Waffle House", false); break;
 			}
 		}
 		return false;
