@@ -77,9 +77,9 @@ public class SplatoonPlugin implements Plugin {
 		    	curIndex++;
 		    }
 		    
-		    resp += "Current rotation: "+sdf.format(new Date(rotations[curIndex].startTime))+" to "+sdf.format(new Date(rotations[curIndex].endTime))+" くコ:ミ\\n";
-		    resp += rotations[curIndex].turfMode+": "+String.join(", ", rotations[curIndex].turfMaps)+"\\n";
-		    resp += rotations[curIndex].rankedMode+": "+String.join(", ", rotations[curIndex].rankedMaps)+"\\n";
+		    resp += "Current rotation: "+sdf.format(new Date(rotations[curIndex].startTime))+" to "+sdf.format(new Date(rotations[curIndex].endTime))+" くコ:ミ\n";
+		    resp += rotations[curIndex].turfMode+": "+String.join(", ", rotations[curIndex].turfMaps)+"\n";
+		    resp += rotations[curIndex].rankedMode+": "+String.join(", ", rotations[curIndex].rankedMaps)+"\n";
 	    } catch (Exception e) {
 	    	log.warn("Exception caught while trying to print current rotation:",e);
 	    	resp = "Couldn't get current rotation data!";
@@ -96,9 +96,9 @@ public class SplatoonPlugin implements Plugin {
 		    }
 		    curIndex++;
 		    
-		    resp += "Next rotation: "+sdf.format(new Date(rotations[curIndex].startTime))+" to "+sdf.format(new Date(rotations[curIndex].endTime))+" くコ:ミ\\n";
-		    resp += rotations[curIndex].turfMode+": "+String.join(", ", rotations[curIndex].turfMaps)+"\\n";
-		    resp += rotations[curIndex].rankedMode+": "+String.join(", ", rotations[curIndex].rankedMaps)+"\\n";
+		    resp += "Next rotation: "+sdf.format(new Date(rotations[curIndex].startTime))+" to "+sdf.format(new Date(rotations[curIndex].endTime))+" くコ:ミ\n";
+		    resp += rotations[curIndex].turfMode+": "+String.join(", ", rotations[curIndex].turfMaps)+"\n";
+		    resp += rotations[curIndex].rankedMode+": "+String.join(", ", rotations[curIndex].rankedMaps)+"\n";
 	    } catch (Exception e) {
 	    	log.warn("Exception caught while trying to print next rotation:",e);
 	    	resp = "Couldn't get current rotation data!";

@@ -31,6 +31,7 @@ import org.pircbotx.hooks.events.ConnectEvent;
 import org.pircbotx.hooks.events.DisconnectEvent;
 import org.pircbotx.hooks.events.JoinEvent;
 import org.pircbotx.hooks.events.MessageEvent;
+import org.pircbotx.hooks.events.NoticeEvent;
 import org.pircbotx.hooks.events.PartEvent;
 import org.pircbotx.hooks.events.PrivateMessageEvent;
 import org.pircbotx.hooks.events.ServerResponseEvent;
@@ -40,9 +41,18 @@ import org.slf4j.LoggerFactory;
 
 import com.klazen.shadesbot.plugin.*;
 
-import sx.blah.discord.DiscordClient;
+import sx.blah.discord.Discord4J;
+import sx.blah.discord.api.ClientBuilder;
+import sx.blah.discord.api.DiscordException;
+import sx.blah.discord.api.IDiscordClient;
+import sx.blah.discord.api.MissingPermissionsException;
+import sx.blah.discord.handle.Event;
+import sx.blah.discord.handle.EventDispatcher;
 import sx.blah.discord.handle.IListener;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
+import sx.blah.discord.handle.impl.events.ReadyEvent;
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.util.HTTP429Exception;
 import sx.blah.discord.util.MessageBuilder;
 
 public class ShadesBot extends ListenerAdapter<PircBotX> {
@@ -85,6 +95,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	String twitchFile;
 	
 	String discordMainChannelID = "";
+	IDiscordClient discordClient;
 	
 	public ShadesBot(BotConsole console, BotConfig config) throws ClassNotFoundException, IOException  {
 		log.info("Hello from Shadesbot's Constructor!");
@@ -130,6 +141,15 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	    	}
 	    }
 		log.info("Plugins Initialized.");
+		
+		ClientBuilder clientBuilder = new ClientBuilder(); //Creates the ClientBuilder instance
+	    clientBuilder.withLogin(config.getDiscordUser(),config.getDiscordPass()); //Adds the login info to the builder
+	    try {
+			discordClient = clientBuilder.build();
+		} catch (DiscordException e) {
+			log.error("Unable to build discord client configuration!",e);
+			e.printStackTrace();
+		}
 	    
 		Timer timer = new Timer();
 		timer.schedule(new AutoXPTask(), AUTO_XP_TIME, AUTO_XP_TIME);
@@ -206,7 +226,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		if (config.doUseDiscord()) {
 			try {
 				zbot.connectDiscord();
-				log.info("Started Discord");
+				log.info("Started Discord...");
 			} catch (ParseException | URISyntaxException e) {
 				console.printLineItalic(null, "Unable to connect to the discord server!");
 				log.warn("Unable to connect to the discord server!",e);
@@ -218,18 +238,21 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	}
 	
 	public void connectDiscord() throws IOException, ParseException, URISyntaxException {
-		DiscordClient.get().login(config.getDiscordUser(),config.getDiscordPass());
-		
-		DiscordClient.get().getDispatcher().registerListener(new IListener<MessageReceivedEvent>() {
-			@Override public void receive(MessageReceivedEvent messageReceivedEvent) {
-				if (config.doUseDiscord() && config.getDiscordMainChannelName() != null && config.getDiscordMainChannelName().equals(messageReceivedEvent.getMessage().getChannel().getName())) {
-					discordMainChannelID = messageReceivedEvent.getMessage().getChannel().getID();
-				}
-				
-				ShadesMessageEvent sme = new ShadesMessageEvent(messageReceivedEvent, MessageOrigin.Discord, ((s,b) -> sendMessageDiscord(s,messageReceivedEvent.getMessage().getChannel(),b)));
-				handleMessage(sme,true);
-			}
-		});
+		try {
+			discordClient.login();
+		} catch (DiscordException e) {
+			log.error("Unable to login to Discord!");
+		}
+	    EventDispatcher dispatcher = discordClient.getDispatcher();
+	    dispatcher.registerListener((IListener<ReadyEvent>)(e)->discordReady(e));
+	    dispatcher.registerListener((IListener<MessageReceivedEvent>)(e)->{
+			ShadesMessageEvent sme = new ShadesMessageEvent(e, MessageOrigin.Discord, ((s,b) -> sendMessageDiscord(s,e.getMessage().getChannel(),b)));
+			handleMessage(sme,true);
+	    });
+	}
+	
+	public void discordReady(ReadyEvent e) {
+		log.info("Discord connected!");
 	}
 	
 	public void setBot(PircBotX bot) {
@@ -268,6 +291,13 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 				}
 			}
 		}
+		System.out.println(event.getRawLine());
+	}
+	
+	public void onNotice(NoticeEvent<PircBotX> event) {
+		//testing for whispers
+		System.out.println(event.getMessage());
+		System.out.println(event.getNotice());
 	}
 	
 	//Every time a user joins, we will add his name to the list
@@ -293,7 +323,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	public void onConnect(ConnectEvent<PircBotX> event) {
 		console.printLineItalic(null,"connected to server");
 		
-		bot.sendCAP().request("twitch.tv/membership");
+		bot.sendCAP().request("twitch.tv/commands"); //for whispers (and purge?)
+		bot.sendCAP().request("twitch.tv/membership"); //for userlist
 		bot.sendRaw().rawLineNow("JOIN "+config.getChannel());
 	}
 	
@@ -490,15 +521,31 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	 * 
 	 * @param message the message to send
 	 */
-	public void sendMessageDiscord(String message, sx.blah.discord.handle.obj.Channel c, boolean withTTS) {
-		MessageBuilder mb = new MessageBuilder().appendContent(message).withChannel(c);
-		if (withTTS) mb.withTTS();
-		mb.build();
-		console.printLine("Shadesbot",message);
+	public void sendMessageDiscord(String message, IChannel c, boolean withTTS) {
+		try {
+			MessageBuilder mb = new MessageBuilder(discordClient).appendContent(message).withChannel(c);
+			if (withTTS) mb.withTTS();
+			mb.build();
+			console.printLine("Shadesbot",message);
+		} catch (MissingPermissionsException e) {
+			log.error("Unable to send message "+message+" - incorrect permissions",e);
+		} catch (HTTP429Exception e) {
+			log.error("Unable to send message "+message+" - rate limited",e);
+		} catch (DiscordException e) {
+			log.error("Unable to send message "+message+"",e);
+		}
 	}
 	
 	public void sendMessageDiscordMain(String message, boolean withTTS) {
-		sendMessageDiscord(message, DiscordClient.get().getChannelByID(discordMainChannelID), withTTS);
+		try {
+			discordClient.getChannelByID(discordMainChannelID).sendMessage(message,withTTS);
+		} catch (MissingPermissionsException e) {
+			log.error("Unable to send message "+message+" - incorrect permissions",e);
+		} catch (HTTP429Exception e) {
+			log.error("Unable to send message "+message+" - rate limited",e);
+		} catch (DiscordException e) {
+			log.error("Unable to send message "+message+"",e);
+		}
 	}
 	
 	/**
@@ -636,10 +683,10 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		@Override
 		public void run() {
 			if (config.doUseDiscord()) {
-				if (!DiscordClient.get().isReady()) {
+				if (!discordClient.isReady()) {
 					try {
 						log.warn("Disconnected from Discord. Attempting reconnect.");
-						DiscordClient.get().login(config.getDiscordUser(),config.getDiscordPass());
+						discordClient.login();
 						log.info("Reconnected to Discord?");
 						discordRetryCount = DISCORD_RETRY_COUNT;
 					} catch (Exception e) {
