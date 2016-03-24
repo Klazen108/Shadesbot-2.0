@@ -64,6 +64,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	public static final int FOLLOWER_ALERT_POLL_TIME = 10000;
 	/** Check this often (in ms) to see if discord has disconnected, and reconnect if so */
 	public static final int DISCORD_WATCHDOG_TIME = 20000;
+	/** Check this often (in ms) to see if discord has disconnected, and reconnect if so */
+	public static final int IRC_WATCHDOG_TIME = 20000;
 	/** If a user hasn't talked in this amount of time (in ms), consider them gona and remove them from the userlist */
 	public static final int USER_TIMEOUT = 60000*30;
 	/** If discord is disconnected, attempt to reconnect this many times before turning off the connected. */
@@ -96,6 +98,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	
 	String discordMainChannelID = "";
 	IDiscordClient discordClient;
+	
+	boolean ircConnected;
 	
 	public ShadesBot(BotConsole console, BotConfig config) throws ClassNotFoundException, IOException  {
 		log.info("Hello from Shadesbot's Constructor!");
@@ -152,15 +156,12 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		}
 	    
 		Timer timer = new Timer();
-		timer.schedule(new AutoXPTask(), AUTO_XP_TIME, AUTO_XP_TIME);
-		timer = new Timer();
-		timer.schedule(new AutoTwitchTask(), TWITCH_POLL_TIME, TWITCH_POLL_TIME);
-		timer = new Timer();
-		timer.schedule(new AutoFollowerTask(), FOLLOWER_ALERT_POLL_TIME, FOLLOWER_ALERT_POLL_TIME);
-		timer = new Timer();
-		timer.schedule(new SafetySaveTask(), 60000*10,60000*10);
-		timer = new Timer();
-		timer.schedule(new DiscordWatchdogTask(), DISCORD_WATCHDOG_TIME, DISCORD_WATCHDOG_TIME);
+		new Timer().schedule(new AutoXPTask(), AUTO_XP_TIME, AUTO_XP_TIME);
+		new Timer().schedule(new AutoTwitchTask(), TWITCH_POLL_TIME, TWITCH_POLL_TIME);
+		new Timer().schedule(new AutoFollowerTask(), FOLLOWER_ALERT_POLL_TIME, FOLLOWER_ALERT_POLL_TIME);
+		new Timer().schedule(new SafetySaveTask(), 60000*10,60000*10);
+		new Timer().schedule(new DiscordWatchdogTask(), DISCORD_WATCHDOG_TIME, DISCORD_WATCHDOG_TIME);
+		new Timer().schedule(new IRCWatchdogTask(), IRC_WATCHDOG_TIME, IRC_WATCHDOG_TIME);
 		
 		//Make sure to use -Dfile.encoding=UTF-8
 		//when starting the JVM
@@ -209,8 +210,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
                         .setName(config.getName())
                         .setServer(config.getServer(), config.getPort())
                         .setServerPassword(config.getPassword())
-                        //.addAutoJoinChannel(config.getChannel())
-                        //.addCapHandler(new EnableCapHandler("twitch.tv/membership",true))
                         .addListener(zbot) 
                         .setAutoReconnect(true)
                         .buildConfiguration();
@@ -253,6 +252,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	
 	public void discordReady(ReadyEvent e) {
 		log.info("Discord connected!");
+		console.printLineItalic(null, "Discord connected!");
 	}
 	
 	public void setBot(PircBotX bot) {
@@ -317,11 +317,15 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	}
 	
 	public void onDisconnect(DisconnectEvent<PircBotX> event) {
-		console.printLineItalic(null,"disconnected from server");
+		console.printLineItalic(null,"Disconnected from IRC server");
+		log.warn("Disconnected from IRC server");
+		ircConnected=false;
 	}
 	
 	public void onConnect(ConnectEvent<PircBotX> event) {
-		console.printLineItalic(null,"connected to server");
+		console.printLineItalic(null,"Connected to IRC server");
+		log.info("Connected from IRC server");
+		ircConnected=true;
 		
 		bot.sendCAP().request("twitch.tv/commands"); //for whispers (and purge?)
 		bot.sendCAP().request("twitch.tv/membership"); //for userlist
@@ -607,10 +611,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	public boolean isEnabled() {
 		return enabled;
 	}
-	/*
-	public GuessController getGuessController() {
-		return guessController;
-	}*/
 		
 	/**
 	 * Updates userlist & distributes XP to active participants
@@ -687,19 +687,37 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 					try {
 						log.warn("Disconnected from Discord. Attempting reconnect.");
 						discordClient.login();
-						log.info("Reconnected to Discord?");
 						discordRetryCount = DISCORD_RETRY_COUNT;
 					} catch (Exception e) {
 						log.warn("Error reconnecting to discord!",e);
-						discordRetryCount-=1;
-						if (discordRetryCount>0) {
-							log.info("Will retry "+discordRetryCount+" more times.");
-						} else {
-							log.warn("Couldn't reconnect. Halting. Reenable discord from the config menu and restart to reconnect.");
-							console.printLineItalic(null, "Failed reconnecting to discord. Reenable and restart to try again.");
-							config.setDoUseDiscord(false);
-						}
+						//discordRetryCount-=1;
+						//if (discordRetryCount>0) {
+						//	log.info("Will retry "+discordRetryCount+" more times.");
+						//} else {
+						//	log.warn("Couldn't reconnect. Halting. Reenable discord from the config menu and restart to reconnect.");
+						//	console.printLineItalic(null, "Failed reconnecting to discord. Reenable and restart to try again.");
+						//	config.setDoUseDiscord(false);
+						//}
 					}
+				}
+			}
+		}
+	}
+	
+	class IRCWatchdogTask extends TimerTask {
+		@Override
+		public void run() {
+			if (!ircConnected) {
+				try {
+					log.warn("Disconnected from IRC. Attempting reconnect.");
+					new Thread(new Runnable() {public void run() {try {
+						bot.startBot();
+						log.info("Restarted PircBotX");
+					} catch (IOException | IrcException e) {
+						log.error("Error starting bot thread!",e);
+					}}},"PircBotX").start();
+				} catch (Exception e) {
+					log.warn("Error reconnecting to IRC!",e);
 				}
 			}
 		}

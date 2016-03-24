@@ -1,10 +1,10 @@
 eclipse.preferences.version=1
 encoding//src/com/klazen/shadesbot/ShadesBot.java=UTF-8
 encoding//src/com/klazen/shadesbot/plugin/GiveShadesHandler.java=UTF-8
-encoding//src/com/klazen/shadesbot/plugin/HelpfulCommandsHandler.java=UTF-8
 encoding//src/com/klazen/shadesbot/plugin/MagicEightBotHandler.java=UTF-8
 encoding//src/com/klazen/shadesbot/plugin/ShadesHandler.java=UTF-8
 encoding//src/com/klazen/shadesbot/plugin/WelcomeHandler.java=UTF-8
 encoding//src/com/klazen/shadesbot/plugin/guessdeaths/GuessPlugin.java=UTF-8
+encoding//src/com/klazen/shadesbot/plugin/simplecommand/SimpleCommandsHandler.java=UTF-8
 encoding//src/com/klazen/shadesbot/plugin/splatoon/SplatoonPlugin.java=UTF-8
 encoding//src/com/klazen/shadesbot/plugin/splatoon/SplatoonRotation.java=UTF-8
