@@ -21,6 +21,12 @@ import com.klazen.shadesbot.Plugin;
 import com.klazen.shadesbot.ShadesBot;
 import com.klazen.shadesbot.ShadesMessageEvent;
 
+/**
+ * A simple command handler, for generic one-line responses without any data dependency. 
+ * Reads and saves commands to commands.txt
+ * 
+ * @author Klazen108
+ */
 public class SimpleCommandPlugin implements Plugin  {
 	Map<String,CommandEntry> commandMap;
 	

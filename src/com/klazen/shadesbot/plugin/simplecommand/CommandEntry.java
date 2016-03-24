@@ -18,6 +18,13 @@ public class CommandEntry {
 		command = null;
 		response = null;
 	}
+	
+	public CommandEntry(String command, String response, String... comments) {
+		if (command != null && response == null) throw new IllegalArgumentException("A command must have a response!");
+		this.command = command;
+		this.response = response;
+		for (String comment : comments) this.comments.add(comment);
+	}
 
 	/**
 	 * Reads in command entries from a BufferedReader.
@@ -52,6 +59,12 @@ public class CommandEntry {
 		return e;
 	}
 	
+	/**
+	 * Writes CommandEntry to an opened Writer
+	 * 
+	 * @param writer the Writer to... write to?
+	 * @throws IOException if an exception occurs while writing
+	 */
 	public void save(Writer writer) throws IOException {
 		for (String comment : comments) writer.write(comment+LINEBREAK);
 		writer.write(command+LINEBREAK);
