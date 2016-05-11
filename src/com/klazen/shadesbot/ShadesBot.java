@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
@@ -21,7 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.json.simple.parser.ParseException;
 import org.pircbotx.Channel;
 import org.pircbotx.Configuration;
 import org.pircbotx.PircBotX;
@@ -43,17 +43,16 @@ import com.klazen.shadesbot.plugin.*;
 
 import sx.blah.discord.Discord4J;
 import sx.blah.discord.api.ClientBuilder;
-import sx.blah.discord.api.DiscordException;
+import sx.blah.discord.api.EventDispatcher;
 import sx.blah.discord.api.IDiscordClient;
-import sx.blah.discord.api.MissingPermissionsException;
-import sx.blah.discord.handle.Event;
-import sx.blah.discord.handle.EventDispatcher;
-import sx.blah.discord.handle.IListener;
+import sx.blah.discord.api.IListener;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.HTTP429Exception;
 import sx.blah.discord.util.MessageBuilder;
+import sx.blah.discord.util.MissingPermissionsException;
 
 public class ShadesBot extends ListenerAdapter<PircBotX> {
 	/** How often (in ms) to give XP points to users in the userlist */
@@ -147,7 +146,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		log.info("Plugins Initialized.");
 		
 		ClientBuilder clientBuilder = new ClientBuilder(); //Creates the ClientBuilder instance
-	    clientBuilder.withLogin(config.getDiscordUser(),config.getDiscordPass()); //Adds the login info to the builder
+	    clientBuilder.withToken(config.getDiscordToken());
 	    try {
 			discordClient = clientBuilder.build();
 		} catch (DiscordException e) {
@@ -155,7 +154,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			e.printStackTrace();
 		}
 	    
-		Timer timer = new Timer();
 		new Timer().schedule(new AutoXPTask(), AUTO_XP_TIME, AUTO_XP_TIME);
 		new Timer().schedule(new AutoTwitchTask(), TWITCH_POLL_TIME, TWITCH_POLL_TIME);
 		new Timer().schedule(new AutoFollowerTask(), FOLLOWER_ALERT_POLL_TIME, FOLLOWER_ALERT_POLL_TIME);
@@ -226,7 +224,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			try {
 				zbot.connectDiscord();
 				log.info("Started Discord...");
-			} catch (ParseException | URISyntaxException e) {
+			} catch (URISyntaxException e) {
 				console.printLineItalic(null, "Unable to connect to the discord server!");
 				log.warn("Unable to connect to the discord server!",e);
 				e.printStackTrace();
@@ -236,11 +234,12 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		return zbot;
 	}
 	
-	public void connectDiscord() throws IOException, ParseException, URISyntaxException {
+	public void connectDiscord() throws IOException, URISyntaxException {
 		try {
 			discordClient.login();
 		} catch (DiscordException e) {
 			log.error("Unable to login to Discord!");
+			console.printLine(null,"Unable to connect to discord! Check the log.");
 		}
 	    EventDispatcher dispatcher = discordClient.getDispatcher();
 	    dispatcher.registerListener((IListener<ReadyEvent>)(e)->discordReady(e));
@@ -253,6 +252,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	public void discordReady(ReadyEvent e) {
 		log.info("Discord connected!");
 		console.printLineItalic(null, "Discord connected!");
+		discordClient.updatePresence(false, Optional.of("Badger Diddler 64"));
 	}
 	
 	public void setBot(PircBotX bot) {
@@ -336,7 +336,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		log.info("[PM from "+pme.getUser().getNick()+"] "+pme.getMessage());
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void onMessage(MessageEvent event) {
 		ShadesMessageEvent sme = new ShadesMessageEvent(event, MessageOrigin.IRC, ((s,b) -> sendMessage(s)));
 		handleMessage(sme,true);

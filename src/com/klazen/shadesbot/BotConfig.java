@@ -6,9 +6,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BotConfig {
+	static Logger log = LoggerFactory.getLogger(ShadesBot.class);
+	
 	List<String> admins;
 	boolean bettingEnabled;
 	boolean snurdeepsMode;
@@ -22,17 +28,8 @@ public class BotConfig {
 	String password;
 	
 	boolean useDiscord;
-	String discordUser;
-	String discordPass;
+	String discordToken;
 	String discordMainChannelName;
-	
-	public String getDiscordUser() {
-		return discordUser;
-	}
-	
-	public String getDiscordPass() {
-		return discordPass;
-	}
 	
 	public boolean doUseDiscord() {
 		return useDiscord;
@@ -65,8 +62,7 @@ public class BotConfig {
 		port=DEFAULT_PORT;
 		this.filename="configFile";
 		
-		discordUser="";
-		discordPass="";
+		discordToken="";
 		useDiscord=false;
 		discordMainChannelName="";
 	}
@@ -147,6 +143,10 @@ public class BotConfig {
 		return password;
 	}
 	
+	public String getDiscordToken() {
+		return discordToken;
+	}
+	
 	private String implode(List<String> list, String delimiter) {
 		String s = "";
 		if (list != null && list.size()>0) {
@@ -163,6 +163,7 @@ public class BotConfig {
 	}
 	
 	public void save() throws FileNotFoundException, IOException {
+		log.debug("Saving properties...");
 		Properties p = new Properties();
 		p.put("bettingEnabled", bettingEnabled?"true":"false");
 		p.put("snurdeepsMode", snurdeepsMode?"true":"false");
@@ -175,11 +176,11 @@ public class BotConfig {
 		p.put("password",password);
 		
 		p.put("useDiscord", useDiscord?"true":"false");
-		p.put("discordUser", discordUser);
-		p.put("discordPass", discordPass);
+		p.put("discordToken", discordToken);
 		p.put("discordMainChannelName", discordMainChannelName);
 		
 		p.store(new FileWriter(filename), null);
+		log.debug("Property save completed.");
 	}
 	
 	public static BotConfig load(String filename) throws IOException, FileNotFoundException, ClassNotFoundException {
@@ -191,6 +192,14 @@ public class BotConfig {
 	}
 	
 	private void loadFromProperties(Properties p) {
+		log.debug("Loading properties...");
+		
+		log.trace("Dumping property file to trace");
+		for (Map.Entry<Object,Object> curEntry : p.entrySet()) {
+			log.trace(curEntry.getKey() + " => " + curEntry.getValue());
+		}
+		log.trace("Dump completed.");
+		
 		bettingEnabled = p.get("bettingEnabled").equals("true");
 		snurdeepsMode = p.get("snurdeepsMode").equals("true");
 		channel = (String)p.get("channel");
@@ -207,8 +216,13 @@ public class BotConfig {
 		password = (String)p.get("password");
 		
 		useDiscord = p.get("useDiscord").equals("true");
-		discordUser = (String)p.get("discordUser");
-		discordPass = (String)p.get("discordPass");
 		discordMainChannelName = (String)p.get("discordMainChannelName");
+		discordToken = (String)p.getProperty("discordToken");
+		
+		if (useDiscord && (discordToken==null || discordToken.isEmpty())) {
+			log.warn("Discord is enabled in the config, but no token was provided! Disabling discord.");
+			useDiscord=false;
+		}
+		log.debug("Property load completed.");
 	}
 }

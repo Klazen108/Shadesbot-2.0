@@ -13,9 +13,8 @@ channel=\#yourchannel
 username=bot_username
 password=oauth\:youroauthpassword
 
-#Discord Login Information
-discordUser=your.discord@email.here
-discordPass=yourdiscordp4ssw0rd
+#Discord Login Information - see https://discordapp.com/developers/applications/me
+discordToken=mwQ2BgmJm6KHwTXtsLCTbE7wUbSe6FAVQE4EzoIwrI20KoBI0E
 
 #comma separated list of admins who act as moderators (if IRC OP recognition fails)
 admins=
