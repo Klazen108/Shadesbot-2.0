@@ -1,8 +1,8 @@
 package com.klazen.shadesbot.plugin.race;
 
-import com.klazen.shadesbot.Plugin;
-import com.klazen.shadesbot.ShadesBot;
-import com.klazen.shadesbot.ShadesMessageEvent;
+import com.klazen.shadesbot.core.Plugin;
+import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.ShadesMessageEvent;
 
 public class RacePlugin implements Plugin {
 	String raceName = null;

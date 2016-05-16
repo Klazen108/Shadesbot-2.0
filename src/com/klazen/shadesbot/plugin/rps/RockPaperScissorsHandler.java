@@ -5,11 +5,11 @@ import java.util.regex.Matcher;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
-import com.klazen.shadesbot.MessageOrigin;
-import com.klazen.shadesbot.MessageSender;
-import com.klazen.shadesbot.Person;
-import com.klazen.shadesbot.ShadesBot;
-import com.klazen.shadesbot.Util;
+import com.klazen.shadesbot.core.MessageOrigin;
+import com.klazen.shadesbot.core.MessageSender;
+import com.klazen.shadesbot.core.Person;
+import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.Util;
 import com.klazen.shadesbot.plugin.SimpleMessageHandler;
 
 public class RockPaperScissorsHandler extends SimpleMessageHandler {

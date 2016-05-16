@@ -22,9 +22,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.klazen.shadesbot.Plugin;
-import com.klazen.shadesbot.ShadesBot;
-import com.klazen.shadesbot.ShadesMessageEvent;
+import com.klazen.shadesbot.core.Plugin;
+import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.ShadesMessageEvent;
 import com.klazen.shadesbot.plugin.twitter.TwitterPlugin;
  
 public class MarkovPlugin implements Plugin {
@@ -86,18 +86,21 @@ public class MarkovPlugin implements Plugin {
 		//store the message in the database
 		Tuple curTuple;
 		DenseBag<String> suffix;
-		for (int i=0; i<words.size()-1; i++) {
-			curTuple = new Tuple(words.get(i),words.get(i+1));
-			suffix = markovChain.get(curTuple);
 
-			if (suffix==null) {
-				suffix = new DenseBag<String>();
-				markovChain.put(curTuple, suffix);
-			}
-			
-			if (i < words.size()-2) suffix.add(words.get(i+2));
-			else suffix.add("");
-		}		
+        synchronized(markovChain) {
+			for (int i=0; i<words.size()-1; i++) {
+				curTuple = new Tuple(words.get(i),words.get(i+1));
+				suffix = markovChain.get(curTuple);
+	
+				if (suffix==null) {
+					suffix = new DenseBag<String>();
+					markovChain.put(curTuple, suffix);
+				}
+				
+				if (i < words.size()-2) suffix.add(words.get(i+2));
+				else suffix.add("");
+			}		
+        }
 	}
 	
 	public String generateSentence() {
@@ -135,28 +138,30 @@ public class MarkovPlugin implements Plugin {
 		    Element rootElement = document.createElement("markov");
 	        document.appendChild(rootElement);
 
-			for (Entry<Tuple, DenseBag<String>> curEntry : markovChain.entrySet()) {
-				Element entryElement = document.createElement("e");
-				entryElement.setAttribute("a", curEntry.getKey().a);
-				entryElement.setAttribute("b", curEntry.getKey().b);
-
-				for (Entry<String,Integer> curBagEntry : curEntry.getValue().map.entrySet()) {
-					try {
-						Element bagElement = document.createElement("m");
-						if (curBagEntry.getValue()>1) {
-							bagElement.setAttribute("w", ""+curBagEntry.getValue());
+	        synchronized(markovChain) {
+				for (Entry<Tuple, DenseBag<String>> curEntry : markovChain.entrySet()) {
+					Element entryElement = document.createElement("e");
+					entryElement.setAttribute("a", curEntry.getKey().a);
+					entryElement.setAttribute("b", curEntry.getKey().b);
+	
+					for (Entry<String,Integer> curBagEntry : curEntry.getValue().map.entrySet()) {
+						try {
+							Element bagElement = document.createElement("m");
+							if (curBagEntry.getValue()>1) {
+								bagElement.setAttribute("w", ""+curBagEntry.getValue());
+							}
+							bagElement.setTextContent(curBagEntry.getKey());
+							entryElement.appendChild(bagElement);
+						} catch (Exception e) {
+							String elementName = curBagEntry.getKey();
+							if (elementName == null) elementName = "null";
+							log.error("Error while serializing a markov chain element! Name: "+elementName+" (continuing serialization)",e);
 						}
-						bagElement.setTextContent(curBagEntry.getKey());
-						entryElement.appendChild(bagElement);
-					} catch (Exception e) {
-						String elementName = curBagEntry.getKey();
-						if (elementName == null) elementName = "null";
-						log.error("Error while serializing a markov chain element! Name: "+elementName+" (continuing serialization)",e);
 					}
+					
+					rootElement.appendChild(entryElement);
 				}
-				
-				rootElement.appendChild(entryElement);
-			}
+	        }
 			
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	        Transformer transformer = transformerFactory.newTransformer();

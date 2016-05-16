@@ -5,9 +5,9 @@ import java.util.regex.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.klazen.shadesbot.MessageOrigin;
-import com.klazen.shadesbot.MessageSender;
-import com.klazen.shadesbot.ShadesBot;
+import com.klazen.shadesbot.core.MessageOrigin;
+import com.klazen.shadesbot.core.MessageSender;
+import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.plugin.SimpleMessageHandler;
 
 public class LastWarHandler extends SimpleMessageHandler {

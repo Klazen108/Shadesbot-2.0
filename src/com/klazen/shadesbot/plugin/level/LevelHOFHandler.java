@@ -3,11 +3,11 @@ package com.klazen.shadesbot.plugin.level;
 import java.util.List;
 import java.util.regex.Matcher;
 
-import com.klazen.shadesbot.MessageOrigin;
-import com.klazen.shadesbot.MessageSender;
-import com.klazen.shadesbot.Person;
-import com.klazen.shadesbot.ShadesBot;
-import com.klazen.shadesbot.Util;
+import com.klazen.shadesbot.core.MessageOrigin;
+import com.klazen.shadesbot.core.MessageSender;
+import com.klazen.shadesbot.core.Person;
+import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.Util;
 import com.klazen.shadesbot.plugin.SimpleMessageHandler;
 
 public class LevelHOFHandler extends SimpleMessageHandler {

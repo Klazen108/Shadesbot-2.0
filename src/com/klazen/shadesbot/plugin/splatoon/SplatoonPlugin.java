@@ -12,10 +12,10 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.klazen.shadesbot.MessageOrigin;
-import com.klazen.shadesbot.Plugin;
-import com.klazen.shadesbot.ShadesBot;
-import com.klazen.shadesbot.ShadesMessageEvent;
+import com.klazen.shadesbot.core.MessageOrigin;
+import com.klazen.shadesbot.core.Plugin;
+import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.ShadesMessageEvent;
 
 public class SplatoonPlugin implements Plugin {
 	static Logger log = LoggerFactory.getLogger(SplatoonPlugin.class);

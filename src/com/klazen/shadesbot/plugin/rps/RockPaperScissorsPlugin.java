@@ -7,11 +7,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.klazen.shadesbot.MessageSender;
-import com.klazen.shadesbot.Person;
-import com.klazen.shadesbot.Plugin;
-import com.klazen.shadesbot.ShadesBot;
-import com.klazen.shadesbot.ShadesMessageEvent;
+import com.klazen.shadesbot.core.MessageSender;
+import com.klazen.shadesbot.core.Person;
+import com.klazen.shadesbot.core.Plugin;
+import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.ShadesMessageEvent;
 
 public class RockPaperScissorsPlugin implements Runnable, Plugin {
 	public static final int RPS_MATCH_LENGTH_MS = 25000;

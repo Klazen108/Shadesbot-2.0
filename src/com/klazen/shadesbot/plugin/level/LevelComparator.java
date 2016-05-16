@@ -1,7 +1,8 @@
 package com.klazen.shadesbot.plugin.level;
 
 import java.util.Comparator;
-import com.klazen.shadesbot.Person;
+
+import com.klazen.shadesbot.core.Person;
 
 public class LevelComparator implements Comparator<Person> {
 	@Override

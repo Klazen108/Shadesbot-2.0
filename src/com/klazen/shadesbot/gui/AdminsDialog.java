@@ -9,6 +9,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import com.klazen.shadesbot.core.ShadesBot;
+
 import java.awt.GridBagLayout;
 
 import javax.swing.JTextPane;
@@ -17,8 +19,6 @@ import java.awt.GridBagConstraints;
 
 import javax.swing.JScrollPane;
 import javax.swing.JLabel;
-
-import com.klazen.shadesbot.ShadesBot;
 
 import java.awt.Insets;
 import java.awt.event.ActionListener;

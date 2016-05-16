@@ -12,9 +12,9 @@ import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
-import com.klazen.shadesbot.Plugin;
-import com.klazen.shadesbot.ShadesBot;
-import com.klazen.shadesbot.ShadesMessageEvent;
+import com.klazen.shadesbot.core.Plugin;
+import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.ShadesMessageEvent;
 
 import twitter4j.Status;
 import twitter4j.Twitter;

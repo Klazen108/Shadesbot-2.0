@@ -1,4 +1,4 @@
-package com.klazen.shadesbot;
+package com.klazen.shadesbot.core;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import com.klazen.shadesbot.plugin.*;
 
-import sx.blah.discord.Discord4J;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.EventDispatcher;
 import sx.blah.discord.api.IDiscordClient;
@@ -170,14 +169,15 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	private void loadMessageHandlers() {
 		handlers = new LinkedList<SimpleMessageHandler>();
 		//Use reflection to load all handlers
+		log.info("Reflexively scanning the com.klazen.shadesbot.plugin package.");
 		Reflections reflections = new Reflections("com.klazen.shadesbot.plugin");
 	    Set<Class<? extends SimpleMessageHandler>> subTypes = reflections.getSubTypesOf(SimpleMessageHandler.class);
 	    for (Class<? extends SimpleMessageHandler> curClass : subTypes) {
 	    	try {
 				handlers.add(curClass.getConstructor(ShadesBot.class).newInstance(this));
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				console.printLine(null,"Error loading message handler: " + curClass.getCanonicalName());
-				log.error("Error loading message handler: " + curClass.getCanonicalName(),e);
+				console.printLine(null,"(Not Fatal) Error loading message handler: " + curClass.getCanonicalName());
+				log.error("(Not Fatal) Error loading message handler: " + curClass.getCanonicalName(),e);
 				e.printStackTrace();
 			}
 	    }
@@ -186,6 +186,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	private void loadPlugins() {
 		plugins = new HashMap<Class<? extends Plugin>,Plugin>();
 		//Use reflection to load all plugins
+		log.info("Reflexively scanning the com.klazen.shadesbot.plugin package.");
 		Reflections reflections = new Reflections("com.klazen.shadesbot.plugin");
 	    Set<Class<? extends Plugin>> pluginSubtypes = reflections.getSubTypesOf(Plugin.class);
 	    for (Class<? extends Plugin> curClass : pluginSubtypes) {
@@ -193,8 +194,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 				plugins.put(curClass,curClass.getConstructor().newInstance());
 				log.info("Initialized plugin: "+curClass.getCanonicalName());
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				console.printLine(null,"Error loading plugin: " + curClass.getCanonicalName());
-				log.error("Error loading plugin: " + curClass.getCanonicalName(),e);
+				console.printLine(null,"(Not Fatal) Error loading plugin: " + curClass.getCanonicalName());
+				log.error("(Not Fatal) Error loading plugin: " + curClass.getCanonicalName(),e);
 				e.printStackTrace();
 			}
 	    }
@@ -361,7 +362,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 				console.updateUserList(uSet.keySet());
 			}
 		}
-		
+		/* 410 */
 		//before offline check to allow plugins to work even if bot is offline
 		for (Plugin curPlugin : plugins.values()) {
 			//wrap each onMessage individually so one can fail and the rest can run

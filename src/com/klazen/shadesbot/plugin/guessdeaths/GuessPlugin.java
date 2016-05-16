@@ -13,11 +13,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.klazen.shadesbot.MessageSender;
-import com.klazen.shadesbot.Plugin;
-import com.klazen.shadesbot.PluginNotRegisteredException;
-import com.klazen.shadesbot.ShadesBot;
-import com.klazen.shadesbot.ShadesMessageEvent;
+import com.klazen.shadesbot.core.MessageSender;
+import com.klazen.shadesbot.core.Plugin;
+import com.klazen.shadesbot.core.PluginNotRegisteredException;
+import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.ShadesMessageEvent;
 import com.klazen.shadesbot.plugin.twitter.TwitterPlugin;
 import com.klazen.shadesbot.plugin.war.WarEntry;
 import com.klazen.shadesbot.plugin.war.WarPlugin;

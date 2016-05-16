@@ -1,4 +1,4 @@
-package com.klazen.shadesbot;
+package com.klazen.shadesbot.core;
 
 import java.util.Comparator;
 import java.util.List;

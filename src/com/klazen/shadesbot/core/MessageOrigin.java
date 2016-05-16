@@ -1,4 +1,4 @@
-package com.klazen.shadesbot;
+package com.klazen.shadesbot.core;
 
 public enum MessageOrigin {
 	IRC, Discord;

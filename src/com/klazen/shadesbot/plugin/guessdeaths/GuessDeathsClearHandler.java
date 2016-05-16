@@ -3,9 +3,9 @@ package com.klazen.shadesbot.plugin.guessdeaths;
 import java.util.EnumSet;
 import java.util.regex.Matcher;
 
-import com.klazen.shadesbot.MessageOrigin;
-import com.klazen.shadesbot.MessageSender;
-import com.klazen.shadesbot.ShadesBot;
+import com.klazen.shadesbot.core.MessageOrigin;
+import com.klazen.shadesbot.core.MessageSender;
+import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.plugin.SimpleMessageHandler;
 
 public class GuessDeathsClearHandler extends SimpleMessageHandler {

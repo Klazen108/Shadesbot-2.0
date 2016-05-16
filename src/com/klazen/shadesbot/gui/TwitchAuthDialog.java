@@ -10,6 +10,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import com.klazen.shadesbot.core.ShadesBot;
+
 import java.awt.GridBagLayout;
 
 import javax.swing.JLabel;
@@ -17,8 +19,6 @@ import javax.swing.JLabel;
 import java.awt.GridBagConstraints;
 
 import javax.swing.JPasswordField;
-
-import com.klazen.shadesbot.ShadesBot;
 
 import java.awt.Insets;
 import java.awt.Font;
