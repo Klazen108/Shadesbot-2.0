@@ -11,9 +11,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.klazen.shadesbot.Plugin;
-import com.klazen.shadesbot.ShadesBot;
-import com.klazen.shadesbot.ShadesMessageEvent;
+import com.klazen.shadesbot.core.Plugin;
+import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.ShadesMessageEvent;
 
 /**
  * 
@@ -31,16 +31,10 @@ public class OnlinePlugin implements Plugin, Runnable {
 	boolean keepRunning=true;
 	
 	@Override
-	public void onSave() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void onSave() { }
 
 	@Override
-	public void onLoad() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void onLoad() { }
 
 	@Override
 	public void init(ShadesBot bot) {
@@ -56,10 +50,7 @@ public class OnlinePlugin implements Plugin, Runnable {
 	}
 
 	@Override
-	public void onMessage(ShadesBot bot, ShadesMessageEvent event) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void onMessage(ShadesBot bot, ShadesMessageEvent event) { }
 	
 	long nextRunAt = 0;
 	boolean wasOnline = false;
@@ -77,7 +68,7 @@ public class OnlinePlugin implements Plugin, Runnable {
 					if (isOnline()) {
 						if (wasOnline == false) {
 							try {
-							bot.sendMessageDiscordMain("Streamer just went online!",false);
+								bot.sendMessageDiscordMain("Streamer just went online!",false);
 							} catch (NullPointerException e) {
 								//empty, replace with a good exception later
 							}
@@ -103,7 +94,8 @@ public class OnlinePlugin implements Plugin, Runnable {
 		String response="";
 		HttpURLConnection connection = null;  
 		try {
-		    URL u = new URL("https://api.twitch.tv/kraken/streams/"+bot.getChannel().replace("#", ""));
+		    URL u = new URL("https://api.twitch.tv/kraken/streams/"+bot.getConfig().getChannel().replace("#", ""));
+		    log.trace("Connection to twitch API: "+u.toExternalForm());
 		    connection = (HttpURLConnection)u.openConnection();
 		    connection.setRequestMethod("GET");
 		    connection.setUseCaches(false);
@@ -113,6 +105,7 @@ public class OnlinePlugin implements Plugin, Runnable {
 		    	//log.warn("Response code "+connection.getResponseCode()+" received from "+API_ENDPOINT);
 		    	//return; //just skip this attempt if you get a 503
 		    }
+		    log.trace("Response code: "+connection.getResponseCode());
 	
 		    //Get Response    
 		    InputStream is = connection.getInputStream();
@@ -126,6 +119,7 @@ public class OnlinePlugin implements Plugin, Runnable {
 		    rd.close();
 		    response = responseB.toString();
 		    log.trace("Twitch API access finished, parsing response...");
+		    log.trace(response);
 		    JSONObject jo = new JSONObject(response);
 		    boolean isOnline = !(jo.isNull("stream"));
 		    log.info("Checked Twitch API, streamer is online:"+isOnline);
