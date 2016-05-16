@@ -39,6 +39,10 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.klazen.shadesbot.Person;
+import com.klazen.shadesbot.TwitchInterface;
+import com.klazen.shadesbot.core.config.BotConfig;
+import com.klazen.shadesbot.core.config.PluginConfig;
 import com.klazen.shadesbot.plugin.*;
 
 import sx.blah.discord.api.ClientBuilder;
@@ -136,8 +140,14 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	    
 	    for (Plugin curPlugin : plugins.values()) {
 	    	try {
-		    	curPlugin.init(this);
-		    	curPlugin.onLoad();
+	    		PluginConfig pConfig = config.getConfigForPlugin(curPlugin.getClass().getCanonicalName());
+	    		if (pConfig.getEnabled()) {
+			    	curPlugin.init(this);
+			    	curPlugin.onLoad(config.getConfigForPlugin(curPlugin.getClass().getCanonicalName()));
+	    			log.info("Plugin Enabled: "+curPlugin.getClass().getCanonicalName());
+	    		} else {
+	    			log.info("Plugin Disabled: "+curPlugin.getClass().getCanonicalName());
+	    		}
 	    	} catch (Exception e) {
 	    		log.error("Error initializing plugin "+curPlugin.getClass().getCanonicalName(),e);
 	    	}
@@ -416,9 +426,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		synchronized (personMap) {
 			saveObject(userFile,personMap);
 		}
-		for (Plugin curPlugin : plugins.values()) {
-			curPlugin.onSave();
-		}
+		config.save(plugins.values());
 	}
 	
 	public void onDisconnect() {
@@ -426,17 +434,12 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		try {
 			saveObject(userFile,personMap);
 			log.info("User data saved.");
-			config.save();
-			log.info("Config saved.");
+			config.save(plugins.values());
+			log.info("Config & Plugins saved.");
 			if (twitchInterface != null) {
 				saveObject(twitchFile,twitchInterface);
 				log.info("Twitch data saved.");
 			}
-			log.info("Telling plugins to save...");
-			for (Plugin curPlugin : plugins.values()) {
-				curPlugin.onSave();
-			}
-			log.info("Plugins saved.");
 		} catch (IOException e) {
 			log.error("Error saving data!",e);
 			e.printStackTrace();

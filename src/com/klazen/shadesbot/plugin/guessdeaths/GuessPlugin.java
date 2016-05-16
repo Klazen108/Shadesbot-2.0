@@ -12,12 +12,14 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import com.klazen.shadesbot.core.MessageSender;
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.PluginNotRegisteredException;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.PluginConfig;
 import com.klazen.shadesbot.plugin.twitter.TwitterPlugin;
 import com.klazen.shadesbot.plugin.war.WarEntry;
 import com.klazen.shadesbot.plugin.war.WarPlugin;
@@ -151,9 +153,9 @@ public class GuessPlugin implements Plugin {
 	}
 
 	@Override
-	public void onSave() { }
+	public void onSave(Node parentNode) { }
 	@Override
-	public void onLoad() { }
+	public void onLoad(PluginConfig config) { }
 	@Override
 	public void init(ShadesBot bot) {
 		this.bot=bot;

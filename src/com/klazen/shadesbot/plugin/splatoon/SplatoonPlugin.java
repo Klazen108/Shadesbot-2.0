@@ -11,11 +11,13 @@ import java.util.Date;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import com.klazen.shadesbot.core.MessageOrigin;
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.PluginConfig;
 
 public class SplatoonPlugin implements Plugin {
 	static Logger log = LoggerFactory.getLogger(SplatoonPlugin.class);
@@ -29,13 +31,13 @@ public class SplatoonPlugin implements Plugin {
 	SplatoonRotation[] rotations;
 
 	@Override
-	public void onSave() {
+	public void onSave(Node parentNode) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void onLoad() {
+	public void onLoad(PluginConfig config) {
 		// TODO Auto-generated method stub
 		
 	}

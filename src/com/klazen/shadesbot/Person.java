@@ -1,4 +1,4 @@
-package com.klazen.shadesbot.core;
+package com.klazen.shadesbot;
 import java.io.Serializable;
 
 public class Person implements Serializable {

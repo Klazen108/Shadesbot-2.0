@@ -12,7 +12,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import com.google.common.collect.Ordering;
-import com.klazen.shadesbot.core.Person;
+import com.klazen.shadesbot.Person;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.plugin.SimpleMessageHandler;
 

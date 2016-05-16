@@ -1,5 +1,9 @@
 package com.klazen.shadesbot.core;
 
+import org.w3c.dom.Node;
+
+import com.klazen.shadesbot.core.config.PluginConfig;
+
 /** 
  * @author Klazen108
  * @date 2015-12-19
@@ -19,14 +23,17 @@ public interface Plugin {
 	/**
 	 * Called when Shadesbot has determined it is time to save all data. For instance, during periodic autosaves, if the user initiates a save,
 	 * or when the program is shutting down.
+	 * 
+	 * @param parentNode a node to attach any configuration elements that you want. It's up to you to have onSave and onLoad be symmetrical.
 	 */
-	void onSave();
+	void onSave(Node parentNode);
 	
 	/**
 	 * Called when shadesbot is ready to load data. At the moment this is just on program start, AFTER init, but could also happen
 	 * if a re-load is necessary.
+	 * @param pluginConfig The config element for this plugin, for you to load settings from
 	 */
-	void onLoad();
+	void onLoad(PluginConfig pluginConfig);
 	
 	/**
 	 * Called when the bot has loaded and is ready for the plugin to begin its tasks.

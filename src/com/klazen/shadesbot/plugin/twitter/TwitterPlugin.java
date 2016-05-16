@@ -11,10 +11,12 @@ import java.util.Properties;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
+import org.w3c.dom.Node;
 
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.PluginConfig;
 
 import twitter4j.Status;
 import twitter4j.Twitter;
@@ -37,7 +39,7 @@ public class TwitterPlugin implements Plugin {
 	private TwitterFactory factory = null;
 
 	@Override
-	public void onSave() {
+	public void onSave(Node parentNode) {
 		try {
 			Properties p = new Properties();
 			p.put("twitterEnabled", enabled?"true":"false");
@@ -54,7 +56,7 @@ public class TwitterPlugin implements Plugin {
 	}
 
 	@Override
-	public void onLoad() { 
+	public void onLoad(PluginConfig config) { 
 		try {
 			File file = new File(FILENAME);
 			if (file.exists()) {
@@ -139,7 +141,6 @@ public class TwitterPlugin implements Plugin {
 	
 	                this.accessToken = accessToken.getToken();
 	                this.accessTokenSecret = accessToken.getTokenSecret();
-	                onSave();
 				} else {
 	                JOptionPane.showMessageDialog(null, "The pin you entered was invalid. The plugin will be disabled. You can re-enable it in the config file and restart the bot to try again.", "Shadesbot Twitter Plugin",JOptionPane.ERROR_MESSAGE);
 	                setEnabled(false);
@@ -149,7 +150,6 @@ public class TwitterPlugin implements Plugin {
 		} catch (TwitterException te) {
 			JOptionPane.showMessageDialog(null, "An error occurred while setting up the Twitter plugin! The plugin will be disabled. You can re-enable it in the config file and restart the bot to try again.", "Shadesbot Twitter Plugin",JOptionPane.ERROR_MESSAGE);
 			setEnabled(false);
-			onSave();
 			log.error("Error occurred during Twitter Plugin setup! Status Code: "+te.getStatusCode(),te);
 		}
 	}

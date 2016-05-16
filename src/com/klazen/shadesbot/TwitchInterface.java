@@ -1,4 +1,4 @@
-package com.klazen.shadesbot.core;
+package com.klazen.shadesbot;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,6 +15,8 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.klazen.shadesbot.core.BotConsole;
 
 public class TwitchInterface implements Serializable {
 	private static final long serialVersionUID = 1874734838457938625L;

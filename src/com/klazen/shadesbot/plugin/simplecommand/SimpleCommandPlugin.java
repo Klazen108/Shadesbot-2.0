@@ -16,10 +16,12 @@ import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.PluginConfig;
 
 /**
  * A simple command handler, for generic one-line responses without any data dependency. 
@@ -35,7 +37,7 @@ public class SimpleCommandPlugin implements Plugin  {
 	static Logger log = LoggerFactory.getLogger(SimpleCommandPlugin.class);
 	
 	@Override
-	public void onSave() {
+	public void onSave(Node parentNode) {
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(SAVEFILE), "utf-8"))) {
 			for (Entry<String,CommandEntry> curEntry : commandMap.entrySet()) {
 				curEntry.getValue().save(writer);
@@ -51,7 +53,7 @@ public class SimpleCommandPlugin implements Plugin  {
 	}
 
 	@Override
-	public void onLoad() {
+	public void onLoad(PluginConfig config) {
 		log.debug("Loading commands...");
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(SAVEFILE), "utf-8"))) {
 			Map<String,CommandEntry> newMap = new HashMap<String,CommandEntry>();

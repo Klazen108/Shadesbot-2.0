@@ -1,8 +1,11 @@
 package com.klazen.shadesbot.plugin.race;
 
+import org.w3c.dom.Node;
+
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.PluginConfig;
 
 public class RacePlugin implements Plugin {
 	String raceName = null;
@@ -26,9 +29,9 @@ public class RacePlugin implements Plugin {
 	}
 
 	@Override
-	public void onSave() { }
+	public void onSave(Node parentNode) { }
 	@Override
-	public void onLoad() { }
+	public void onLoad(PluginConfig config) { }
 	@Override
 	public void init(ShadesBot bot) { }
 	@Override

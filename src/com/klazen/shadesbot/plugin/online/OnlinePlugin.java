@@ -10,10 +10,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.PluginConfig;
 
 /**
  * 
@@ -31,10 +33,10 @@ public class OnlinePlugin implements Plugin, Runnable {
 	boolean keepRunning=true;
 	
 	@Override
-	public void onSave() { }
+	public void onSave(Node parentNode) { }
 
 	@Override
-	public void onLoad() { }
+	public void onLoad(PluginConfig config) { }
 
 	@Override
 	public void init(ShadesBot bot) {

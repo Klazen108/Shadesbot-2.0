@@ -18,9 +18,9 @@ import java.awt.Insets;
 
 import javax.swing.JCheckBox;
 
-import com.klazen.shadesbot.core.BotConfig;
 import com.klazen.shadesbot.core.PluginNotRegisteredException;
 import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.config.BotConfig;
 import com.klazen.shadesbot.plugin.markov.MarkovPlugin;
 
 import java.awt.event.ActionListener;

@@ -56,9 +56,9 @@ import org.pircbotx.output.OutputRaw;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.klazen.shadesbot.core.BotConfig;
 import com.klazen.shadesbot.core.BotConsole;
 import com.klazen.shadesbot.core.ShadesBot;
+import com.klazen.shadesbot.core.config.BotConfig;
 
 import java.awt.Font;
 

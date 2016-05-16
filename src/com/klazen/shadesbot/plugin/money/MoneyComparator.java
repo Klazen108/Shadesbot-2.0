@@ -2,7 +2,7 @@ package com.klazen.shadesbot.plugin.money;
 
 import java.util.Comparator;
 
-import com.klazen.shadesbot.core.Person;
+import com.klazen.shadesbot.Person;
 
 public class MoneyComparator implements Comparator<Person> {
 	@Override

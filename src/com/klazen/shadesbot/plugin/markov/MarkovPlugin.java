@@ -25,6 +25,7 @@ import org.w3c.dom.NodeList;
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.PluginConfig;
 import com.klazen.shadesbot.plugin.twitter.TwitterPlugin;
  
 public class MarkovPlugin implements Plugin {
@@ -39,6 +40,14 @@ public class MarkovPlugin implements Plugin {
 
 	int snurdeepsCounter;
 	public final int SNURDEEPS_TRIGGER_THRESHOLD = 100;
+	boolean asciiOnly = true;
+	int maxWordSize = 15;
+	int minInputMessageSize = 7;
+	int maxInputMessageSize = 25;
+	int maxOutputMessageSize = 15;
+	String filename = "markov.xml";
+	int minAverageWordLength = 3;
+	boolean tweetsEnabled = true;
 	
 	public MarkovPlugin() {
 		markovChain = new Hashtable<>();
@@ -59,20 +68,22 @@ public class MarkovPlugin implements Plugin {
 		for (String curStr : wordsArray) if (!curStr.isEmpty()) words.add(curStr); //remove empty messages
 		
 		//validate the message according to some rules
-		if (words.size() < 7) return; //ignore short messages
-		if (words.size() > 25) return; //ignore long messages
+		if (words.size() < minInputMessageSize) return; //ignore short messages
+		if (words.size() > maxInputMessageSize) return; //ignore long messages
 		
-		int unicodeCounter=0;
-		for (int i = 0; i < phrase.length(); i++) {
-			if (phrase.codePointAt(i) > 255) unicodeCounter++;
-			if (unicodeCounter > 10) return; //ignore messages composed of many unicode characters
+		if (asciiOnly) {
+			int unicodeCounter=0;
+			for (int i = 0; i < phrase.length(); i++) {
+				if (phrase.codePointAt(i) > 255) unicodeCounter++;
+				if (unicodeCounter > 10) return; //ignore messages composed of many unicode characters
+			}
 		}
 		
 		double avgWordLen = 0;
 		String lastStr="LOLOLOLOL";
 		int dupeCounter=0;
 		for (String curStr : words) {
-			if (curStr.length() > 15) return; //ignore messages with long words (assume it's gibberish or links or something)
+			if (curStr.length() > maxWordSize) return; //ignore messages with long words (assume it's gibberish or links or something)
 			avgWordLen += curStr.length();
 			
 			if (curStr.equalsIgnoreCase(lastStr)) dupeCounter++;
@@ -81,7 +92,7 @@ public class MarkovPlugin implements Plugin {
 			lastStr=curStr;
 		}
 		avgWordLen /= words.size();
-		if (avgWordLen < 3) return; //ignore messages whose average word length is less than 3
+		if (avgWordLen < minAverageWordLength) return; //ignore messages whose average word length is less than 3
 		
 		//store the message in the database
 		Tuple curTuple;
@@ -118,7 +129,7 @@ public class MarkovPlugin implements Plugin {
 				curTuple = curTuple.shiftLeft(nextWord);
 			}
 			i++;
-		} while (!nextWord.isEmpty() && i < 15);
+		} while (!nextWord.isEmpty() && i < maxOutputMessageSize);
 		
 		return newPhrase.toString();
 	}
@@ -129,7 +140,8 @@ public class MarkovPlugin implements Plugin {
 	}
 
 	@Override
-	public void onSave() {
+	public void onSave(Node node) {
+		//TODO: save
 		log.trace("Saving markov chain");
 		try {
 		    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -167,6 +179,7 @@ public class MarkovPlugin implements Plugin {
 	        Transformer transformer = transformerFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 	        DOMSource source = new DOMSource(document);
 	        StreamResult result = new StreamResult(new FileOutputStream(new File("markov.xml")));
 	        transformer.transform(source, result);
@@ -177,7 +190,19 @@ public class MarkovPlugin implements Plugin {
 	}
 
 	@Override
-	public void onLoad() {
+	public void onLoad(PluginConfig config) {
+		/*
+		 	load these from the config file:
+			public final int SNURDEEPS_TRIGGER_THRESHOLD = 100;
+			boolean asciiOnly = true;
+			int maxWordSize = 15;
+			int minInputMessageSize = 7;
+			int maxInputMessageSize = 25;
+			int maxOutputMessageSize = 15;
+			String filename = "markov.xml";
+			int minAverageWordLength = 3;
+		 */
+		
 		Hashtable<Tuple, DenseBag<String>> newMarkovChain = new Hashtable<>();
 		
 		try {
@@ -237,11 +262,13 @@ public class MarkovPlugin implements Plugin {
 				
 				event.getSender().sendMessage(sentence, true);
 				
-				try {
-					TwitterPlugin twitter = bot.getPlugin(TwitterPlugin.class);
-					if (twitter != null) twitter.tweet(sentence);
-				} catch (Exception e) {
-					log.error("Error occurred while tweeting markov sentence!",e);
+				if (tweetsEnabled) {
+					try {
+						TwitterPlugin twitter = bot.getPlugin(TwitterPlugin.class);
+						if (twitter != null) twitter.tweet(sentence);
+					} catch (Exception e) {
+						log.error("Error occurred while tweeting markov sentence!",e);
+					}
 				}
 			}
 		}

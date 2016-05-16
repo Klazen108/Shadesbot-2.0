@@ -7,11 +7,14 @@ import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import com.klazen.shadesbot.core.MessageOrigin;
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.ConfigEntry;
+import com.klazen.shadesbot.core.config.PluginConfig;
 
 /**
  * A simple logging plugin, to log all messages received by the bot.
@@ -21,41 +24,45 @@ import com.klazen.shadesbot.core.ShadesMessageEvent;
 public class LogPlugin implements Plugin {
 	static Logger log = LoggerFactory.getLogger(LogPlugin.class);
 	
-	String filename = "messageLog.txt";
+	ConfigEntry<String> filename;
+	ConfigEntry<String> dateFormat;
 	public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss Z";
-	SimpleDateFormat df;
+	SimpleDateFormat sdf;
 	
 	@Override
-	public void onSave() {}
-
-	@Override
-	public void onLoad() {
-		// TODO load filename and dateformat
+	public void onSave(Node node) {
+		node.appendChild(filename.createNode(node.getOwnerDocument(), "filename"));
+		node.appendChild(dateFormat.createNode(node.getOwnerDocument(), "date_format"));
 	}
 
 	@Override
-	public void init(ShadesBot bot) {
-		String dateformat = DEFAULT_DATE_FORMAT;
+	public void onLoad(PluginConfig config) {
+		filename = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "filename", "messageLog.txt", "File where the log will be stored.");
+		dateFormat = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "date_format", "yyyy-MM-dd HH:mm:ss Z", "Date format to display message timestamps with. Look up Java SimpleDateFormat to see allowable values.");
+
 		try {
-			df = new SimpleDateFormat(dateformat);
+			sdf = new SimpleDateFormat(dateFormat.value);
 		} catch (IllegalArgumentException e) {
-			log.error("Invalid pattern used for date format: "+dateformat);
+			log.error("Invalid pattern used for date format: "+dateFormat.value);
 			log.info("Falling back to default pattern: "+DEFAULT_DATE_FORMAT);
-			df = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
+			sdf = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
 		}
 	}
+
+	@Override
+	public void init(ShadesBot bot) {}
 
 	@Override
 	public void destroy(ShadesBot bot) {}
 
 	@Override
 	public void onMessage(ShadesBot bot, ShadesMessageEvent event) {
-		try (FileWriter fw = new FileWriter(new File(filename),true)) {
+		try (FileWriter fw = new FileWriter(new File(filename.value),true)) {
 			String origin;
 			if (event.getOrigin()==MessageOrigin.Discord) origin="D";
 			else if (event.getOrigin()==MessageOrigin.IRC) origin="I";
 			else origin="?";
-			fw.write("[" + df.format(new Date()) + "] ("+origin+")" + event.getUser() + ": "+event.getMessage()+"\n");
+			fw.write("[" + sdf.format(new Date()) + "] ("+origin+")" + event.getUser() + ": "+event.getMessage()+"\n");
 		} catch (Exception e) {
 			String message;
 			if (event==null || event.getMessage()==null) message="<NULL>";

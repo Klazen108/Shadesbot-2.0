@@ -17,10 +17,12 @@ import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.PluginConfig;
 import com.klazen.shadesbot.plugin.twitter.TwitterPlugin;
 
 public class WarPlugin implements Plugin {
@@ -166,7 +168,7 @@ public class WarPlugin implements Plugin {
 		}
 	}
 	
-	public synchronized void onSave() {
+	public synchronized void onSave(Node parentNode) {
 		File file = new File("warFile");
 		try (FileWriter fw = new FileWriter(file)) {
 			if (announcement == null) fw.write("\r\n");
@@ -179,7 +181,7 @@ public class WarPlugin implements Plugin {
 		}
 	}
 	
-	public synchronized void onLoad() {
+	public synchronized void onLoad(PluginConfig config) {
 		File file = new File("warFile");
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 			String newAnnouncement = br.readLine();
