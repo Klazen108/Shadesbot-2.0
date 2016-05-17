@@ -22,8 +22,8 @@ public class PluginConfig {
 		enabled=true;
 		try {
 			XPath xpath = XPathFactory.newInstance().newXPath();
-			if (node != null && xpath.evaluate("/*/@enabled", node, XPathConstants.NODE)!=null) {
-				enabled = Boolean.valueOf((String)xpath.evaluate("/*/@enabled", node, XPathConstants.STRING));
+			if (node != null && xpath.evaluate("@enabled", node, XPathConstants.NODE)!=null) {
+				enabled = Boolean.valueOf((String)xpath.evaluate("@enabled", node, XPathConstants.STRING));
 			}
 		} catch (Exception e) {
 			log.warn("Non-fatal exception occurred when instantiating PluginConfig.",e);
@@ -51,5 +51,9 @@ public class PluginConfig {
 	
 	public boolean getEnabled() {
 		return enabled;
+	}
+	
+	public void disable() {
+		enabled=false;
 	}
 }

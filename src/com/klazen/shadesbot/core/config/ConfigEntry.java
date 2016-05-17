@@ -45,6 +45,9 @@ public class ConfigEntry<T> {
 		} else if (defaultValue instanceof String) {
 			log.trace("String detected");
 			return (ConfigEntry<U>) loadFromXpathOrDefaultString(relativeNode, xpathExpr, (String)defaultValue, defaultDescription);
+		} else if (defaultValue instanceof Float) {
+			log.trace("Float detected");
+			return (ConfigEntry<U>) loadFromXpathOrDefaultFloat(relativeNode, xpathExpr, (Float)defaultValue, defaultDescription);
 		} else {
 			log.debug("Invalid type! Doing String instead. "+(defaultValue==null?"<NULL>":defaultValue.getClass().getCanonicalName()));
 			return (ConfigEntry<U>) loadFromXpathOrDefaultString(relativeNode, xpathExpr, (String)defaultValue, defaultDescription);
@@ -96,6 +99,24 @@ public class ConfigEntry<T> {
 		try {
 			if (relativeNode != null && xpath.evaluate(xpathExpr+"/@value", relativeNode, XPathConstants.NODE)!=null) {
 				entry.value = (String)xpath.evaluate(xpathExpr+"/@value", relativeNode, XPathConstants.STRING);
+			}
+			if (relativeNode != null && xpath.evaluate(xpathExpr+"/@description", relativeNode, XPathConstants.NODE)!=null) {
+				entry.description = (String)xpath.evaluate(xpathExpr+"/@description", relativeNode, XPathConstants.STRING);
+			}
+		} catch (XPathExpressionException e) {
+			log.error("Error while parsing values from XML! Non-fatal, will just use the default values, but please make sure your code is ok: "+e.getMessage());
+		}
+		
+		return entry;
+	}
+	
+	private static ConfigEntry<Float> loadFromXpathOrDefaultFloat(Node relativeNode, String xpathExpr, Float defaultValue, String defaultDescription) {
+		XPath xpath = XPathFactory.newInstance().newXPath();
+
+		ConfigEntry<Float> entry = new ConfigEntry<Float>(defaultValue,defaultDescription);
+		try {
+			if (relativeNode != null && xpath.evaluate(xpathExpr+"/@value", relativeNode, XPathConstants.NODE)!=null) {
+				entry.value = Float.valueOf((String)xpath.evaluate(xpathExpr+"/@value", relativeNode, XPathConstants.STRING));
 			}
 			if (relativeNode != null && xpath.evaluate(xpathExpr+"/@description", relativeNode, XPathConstants.NODE)!=null) {
 				entry.description = (String)xpath.evaluate(xpathExpr+"/@description", relativeNode, XPathConstants.STRING);

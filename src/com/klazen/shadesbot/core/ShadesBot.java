@@ -134,25 +134,11 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 		loadMessageHandlers();
 		log.info("Message Handlers Loaded.");
 		
-		log.info("Loading Plugins...");
+		log.info("Insatntiating Plugins...");
+		instantiatePlugins();
+		log.info("Plugins Instantiated. Loading Pluings...");
 		loadPlugins();
 		log.info("Plugins Loaded.");
-	    
-	    for (Plugin curPlugin : plugins.values()) {
-	    	try {
-	    		PluginConfig pConfig = config.getConfigForPlugin(curPlugin.getClass().getCanonicalName());
-	    		if (pConfig.getEnabled()) {
-			    	curPlugin.init(this);
-			    	curPlugin.onLoad(config.getConfigForPlugin(curPlugin.getClass().getCanonicalName()));
-	    			log.info("Plugin Enabled: "+curPlugin.getClass().getCanonicalName());
-	    		} else {
-	    			log.info("Plugin Disabled: "+curPlugin.getClass().getCanonicalName());
-	    		}
-	    	} catch (Exception e) {
-	    		log.error("Error starting plugin "+curPlugin.getClass().getCanonicalName(),e);
-	    	}
-	    }
-		log.info("Plugins Initialized.");
 		
 		ClientBuilder clientBuilder = new ClientBuilder(); //Creates the ClientBuilder instance
 	    clientBuilder.withToken(config.getDiscordToken());
@@ -193,7 +179,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	    }
 	}
 	
-	private void loadPlugins() {
+	private void instantiatePlugins() {
 		plugins = new HashMap<Class<? extends Plugin>,Plugin>();
 		//Use reflection to load all plugins
 		log.info("Reflexively scanning the com.klazen.shadesbot.plugin package.");
@@ -201,13 +187,33 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	    Set<Class<? extends Plugin>> pluginSubtypes = reflections.getSubTypesOf(Plugin.class);
 	    for (Class<? extends Plugin> curClass : pluginSubtypes) {
 	    	try {
-				plugins.put(curClass,curClass.getConstructor().newInstance());
-				log.trace("Initialized plugin: "+curClass.getCanonicalName());
+	    		Plugin curPlugin = curClass.getConstructor().newInstance();
+	    		PluginConfig pConfig = config.getConfigForPlugin(curPlugin.getClass().getCanonicalName());
+	    		if (pConfig.getEnabled()) {
+					plugins.put(curClass,curPlugin);
+					log.trace("Initialized Plugin: "+curClass.getCanonicalName());
+	    		} else {
+					log.info("Plugin Disabled: "+curClass.getCanonicalName());
+	    		}
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				console.printLine(null,"(Not Fatal) Error loading plugin: " + curClass.getCanonicalName());
 				log.error("(Not Fatal) Error loading plugin: " + curClass.getCanonicalName(),e);
 				e.printStackTrace();
 			}
+	    }
+	}
+	
+	private void loadPlugins() {
+	    for (Plugin curPlugin : plugins.values()) {
+	    	try {
+		    	curPlugin.init(this);
+		    	curPlugin.onLoad(config.getConfigForPlugin(curPlugin.getClass().getCanonicalName()));
+    			log.info("Plugin Enabled: "+curPlugin.getClass().getCanonicalName());
+    			console.printLine(null,"Plugin Enabled: "+curPlugin.getClass().getSimpleName());
+	    	} catch (Exception e) {
+	    		log.error("Error starting plugin "+curPlugin.getClass().getCanonicalName(),e);
+	    		config.getConfigForPlugin(curPlugin.getClass().getCanonicalName()).disable();
+	    	}
 	    }
 	}
 	
@@ -694,14 +700,6 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 						discordRetryCount = DISCORD_RETRY_COUNT;
 					} catch (Exception e) {
 						log.warn("Error reconnecting to discord!",e);
-						//discordRetryCount-=1;
-						//if (discordRetryCount>0) {
-						//	log.info("Will retry "+discordRetryCount+" more times.");
-						//} else {
-						//	log.warn("Couldn't reconnect. Halting. Reenable discord from the config menu and restart to reconnect.");
-						//	console.printLineItalic(null, "Failed reconnecting to discord. Reenable and restart to try again.");
-						//	config.setDoUseDiscord(false);
-						//}
 					}
 				}
 			}

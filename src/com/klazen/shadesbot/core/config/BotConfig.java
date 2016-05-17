@@ -8,6 +8,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,6 +32,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.Maps;
 import com.klazen.shadesbot.core.Plugin;
 
 public class BotConfig {
@@ -189,15 +197,17 @@ public class BotConfig {
 			Element irc = (Element)document.createElement("irc"); 
 			irc.setAttribute("description", "Parameters for connecting to an IRC server (twitch chat)");
 			core.appendChild(irc);
-			irc.appendChild(port.createNode(document, "port"));
-			irc.appendChild(name.createNode(document, "username"));
+				irc.appendChild(port.createNode(document, "port"));
+				irc.appendChild(name.createNode(document, "username"));
+				irc.appendChild(server.createNode(document, "server"));
+				irc.appendChild(password.createNode(document, "password"));
 	
 			Element discord = (Element)document.createElement("discord"); 
 			discord.setAttribute("description", "Parameters for connecting to a Discord server");
 			core.appendChild(discord);
-			discord.appendChild(useDiscord.createNode(document, "enabled"));
-			discord.appendChild(discordMainChannelName.createNode(document, "mainChannel"));
-			discord.appendChild(discordToken.createNode(document, "authToken"));
+				discord.appendChild(useDiscord.createNode(document, "enabled"));
+				discord.appendChild(discordMainChannelName.createNode(document, "mainChannel"));
+				discord.appendChild(discordToken.createNode(document, "authToken"));
 
 			Element adminsE = (Element)document.createElement("admins"); 
 			adminsE.setAttribute("description", "Admins for your bot, who can control it even if not modded.");
@@ -208,22 +218,40 @@ public class BotConfig {
 				adminsE.appendChild(adminE);
 			}
 		
+			log.trace("Saving plugins");
 			Element plugin = (Element)document.createElement("plugin"); 
 			plugin.setAttribute("description", "Configuration for plugins.");
 			root.appendChild(plugin);
 			for (Plugin curPlugin : plugins) {
+				log.trace("Saving plugin: " + curPlugin.getClass().getCanonicalName());
 				Element curPluginNode = (Element)document.createElement(curPlugin.getClass().getCanonicalName());
+				//curPluginNode.setAttribute("enabled", value); //TODO: where can I get this from?
 				curPlugin.onSave(curPluginNode);
 				plugin.appendChild(curPluginNode);
 			}
+
+			log.trace("Copying configs for disabled plugins");
+			//get all PluginConfigs where name is not in plugins
+			Set<String> enabledPluginNames = plugins.stream().map(p->p.getClass().getCanonicalName()).collect(Collectors.toSet());
+			pluginConfigs.values().stream() //get all plugin config entries
+				.filter(p -> { //where there isn't already an enabled plugin
+					log.trace("Filtering "+p.getName());
+					log.trace("!enabledPluginNames.contains(p.getName()): "+!enabledPluginNames.contains(p.getName()));
+					return !enabledPluginNames.contains(p.getName());}
+				)
+				.forEach(pc -> { //and copy the config that we loaded into the save file
+					plugin.appendChild(plugin.getOwnerDocument().importNode(pc.getNode(),true));
+					log.debug("Copying pluginconfig for " + pc.getName());
+				});
+			log.trace("Done copying configs");
 			
-           DOMSource domSource = new DOMSource(document);
-           FileWriter writer = new FileWriter(new File(filename));
-           StreamResult result = new StreamResult(writer);
-           TransformerFactory tf = TransformerFactory.newInstance();
-           Transformer transformer = tf.newTransformer();
-           transformer.transform(domSource, result);
-           writer.flush();
+            DOMSource domSource = new DOMSource(document);
+            FileWriter writer = new FileWriter(new File(filename));
+            StreamResult result = new StreamResult(writer);
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            transformer.transform(domSource, result);
+            writer.flush();
         }
         catch(Exception e)
         {

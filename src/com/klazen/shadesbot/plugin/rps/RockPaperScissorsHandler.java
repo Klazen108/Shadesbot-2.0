@@ -34,7 +34,8 @@ public class RockPaperScissorsHandler extends SimpleMessageHandler {
 			if (isMod) {
 		        List<String> sortedList = Ordering.from(new RPSWinsComparator()).onResultOf(Functions.forMap(bot.getPersonMap())).reverse().immutableSortedCopy(bot.getPersonMap().keySet());
 		        String guessers = "";
-		        for (int i=0;i<5 && i<sortedList.size();i++) {
+		        int count = bot.getPlugin(RockPaperScissorsPlugin.class).getTopPlayerCount();
+		        for (int i=0;i<count && i<sortedList.size();i++) {
 		        	Person p = bot.getPersonMap().get(sortedList.get(i));
 		        	if (p.getRPSWins()==0) break;
 		        	guessers+=" [" + p.getUsername() + ": " + p.getRPSWins() + "]";

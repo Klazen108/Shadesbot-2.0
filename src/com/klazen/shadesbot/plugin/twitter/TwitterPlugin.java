@@ -1,24 +1,17 @@
 package com.klazen.shadesbot.plugin.twitter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Properties;
-
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.ConfigEntry;
 import com.klazen.shadesbot.core.config.PluginConfig;
 
-import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
@@ -29,70 +22,57 @@ import twitter4j.conf.ConfigurationBuilder;
 public class TwitterPlugin implements Plugin {
 	public final Logger log = Logger.getLogger(getClass());
 	
+	
 	private boolean enabled = false;
-	private String accessToken = "";
-	private String accessTokenSecret = "";
-	private String consumerKey = "";
-	private String consumerSecret = "";
+	ConfigEntry<String> accessToken;
+	ConfigEntry<String> accessTokenSecret;
+	ConfigEntry<String> consumerKey;
+	ConfigEntry<String> consumerSecret;
 	public static final String FILENAME = "twitterConfig";
 
 	private TwitterFactory factory = null;
 
 	@Override
 	public void onSave(Node parentNode) {
-		try {
-			Properties p = new Properties();
-			p.put("twitterEnabled", enabled?"true":"false");
-			p.put("accessToken", accessToken);
-			p.put("accessTokenSecret", accessTokenSecret);
-
-			p.put("consumerKey", consumerKey);
-			p.put("consumerSecret", consumerSecret);
-			
-			p.store(new FileWriter(FILENAME), null);
-		} catch (Exception e) {
-			log.error("Error saving twitter config!",e);
+		parentNode.appendChild(accessToken.createNode(parentNode.getOwnerDocument(), "access_token"));
+		parentNode.appendChild(accessTokenSecret.createNode(parentNode.getOwnerDocument(), "access_token_secret"));
+		parentNode.appendChild(consumerKey.createNode(parentNode.getOwnerDocument(), "consumer_key"));
+		parentNode.appendChild(consumerSecret.createNode(parentNode.getOwnerDocument(), "consumer_secret"));
+		
+		if (!isValidConfiguration()) {
+			log.info("Configuration wasn't valid, disabling plugin");
+			((Element)parentNode).setAttribute("enabled","false");
 		}
 	}
 
 	@Override
 	public void onLoad(PluginConfig config) { 
-		try {
-			File file = new File(FILENAME);
-			if (file.exists()) {
-				Properties p = new Properties();
-				p.load(new FileReader(FILENAME));
-				enabled = p.get("twitterEnabled").equals("true");
-				accessToken = (String)p.get("accessToken");
-				accessTokenSecret = (String)p.get("accessTokenSecret");
-				consumerKey = (String)p.get("consumerKey");
-				consumerSecret = (String)p.get("consumerSecret");
-			}
-		} catch (Exception e) {
-			log.error("Error loading twitter config!",e);
-		}
+		accessToken = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "access_token", "", "One of four secrets needed for twitter API access. See https://apps.twitter.com/app/new");
+		accessTokenSecret = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "access_token_secret", "", "One of four secrets needed for twitter API access. See https://apps.twitter.com/app/new");
+		consumerKey = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "consumer_key", "", "One of four secrets needed for twitter API access. See https://apps.twitter.com/app/new");
+		consumerSecret = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "consumer_secret", "", "One of four secrets needed for twitter API access. See https://apps.twitter.com/app/new");
 		
-		if (enabled && !isValidConfiguration()) {
+		if (!isValidConfiguration()) {
 			log.info("Twitter access tokens not configured, entering setup wizard.");
 			doSetupWizard();
 		}
 	}
 	
 	private boolean isValidConfiguration() {
-		return accessToken != null
-				&& accessTokenSecret != null
-				&& consumerKey != null
-				&& consumerSecret != null
-				&& !accessToken.isEmpty()
-				&& !accessTokenSecret.isEmpty()
-				&& !consumerKey.isEmpty()
-				&& !consumerSecret.isEmpty();
+		return accessToken.value != null
+				&& accessTokenSecret.value != null
+				&& consumerKey.value != null
+				&& consumerSecret.value != null
+				&& !accessToken.value.isEmpty()
+				&& !accessTokenSecret.value.isEmpty()
+				&& !consumerKey.value.isEmpty()
+				&& !consumerSecret.value.isEmpty();
 	}
 	
 	private void doSetupWizard() {
 		try {
 			//First, check if the app itself has been granted API access, and get the necessary keys if not.
-			if (consumerKey == null || consumerKey.isEmpty() || consumerSecret == null || consumerSecret.isEmpty()) {
+			if (consumerKey.value == null || consumerKey.value.isEmpty() || consumerSecret.value == null || consumerSecret.value.isEmpty()) {
 				String message = "You have enabled the twitter plugin, but not yet configured access!\n"+
 					"To begin, you will first need to create an application token. Please visit https://apps.twitter.com/\n"+
 					"to acquire a consumer key and consumer secret. You will need to enter these two things now.\n"+
@@ -110,16 +90,16 @@ public class TwitterPlugin implements Plugin {
 					setEnabled(false);
 					return;
 				}
-				this.consumerKey = consumerKey;
-				this.consumerSecret = consumerSecret;
+				this.consumerKey.value = consumerKey;
+				this.consumerSecret.value = consumerSecret;
 			}
 			
 			//Now we've got API access, and can negotiate user-level access
-			if (accessToken == null || accessTokenSecret == null || accessToken.isEmpty() || accessTokenSecret.isEmpty()) {
+			if (accessToken.value == null || accessTokenSecret.value == null || accessToken.value.isEmpty() || accessTokenSecret.value.isEmpty()) {
 				ConfigurationBuilder cb = new ConfigurationBuilder();
 		        cb.setDebugEnabled(true)
-			      .setOAuthConsumerKey(consumerKey)
-			      .setOAuthConsumerSecret(consumerSecret);
+			      .setOAuthConsumerKey(consumerKey.value)
+			      .setOAuthConsumerSecret(consumerSecret.value);
 	            TwitterFactory tf = new TwitterFactory(cb.build());
 	            Twitter twitter = tf.getInstance();
 	            RequestToken requestToken = twitter.getOAuthRequestToken(); 
@@ -139,11 +119,12 @@ public class TwitterPlugin implements Plugin {
 	                	throw te;
 	                }
 	
-	                this.accessToken = accessToken.getToken();
-	                this.accessTokenSecret = accessToken.getTokenSecret();
+	                this.accessToken.value = accessToken.getToken();
+	                this.accessTokenSecret.value = accessToken.getTokenSecret();
 				} else {
 	                JOptionPane.showMessageDialog(null, "The pin you entered was invalid. The plugin will be disabled. You can re-enable it in the config file and restart the bot to try again.", "Shadesbot Twitter Plugin",JOptionPane.ERROR_MESSAGE);
 	                setEnabled(false);
+	                return;
 				}
 			}
 			JOptionPane.showMessageDialog(null, "Twitter successfully configured! You won't see this wizard again, unless you delete your twitterConfig file.", "Shadesbot Twitter Plugin", JOptionPane.INFORMATION_MESSAGE);
@@ -193,10 +174,10 @@ public class TwitterPlugin implements Plugin {
 			if (factory == null) {
 		        ConfigurationBuilder cb = new ConfigurationBuilder();
 		        cb.setDebugEnabled(true)
-			      .setOAuthConsumerKey(consumerKey)
-			      .setOAuthConsumerSecret(consumerSecret)
-			      .setOAuthAccessToken(accessToken)
-			      .setOAuthAccessTokenSecret(accessTokenSecret);
+			      .setOAuthConsumerKey(consumerKey.value)
+			      .setOAuthConsumerSecret(consumerSecret.value)
+			      .setOAuthAccessToken(accessToken.value)
+			      .setOAuthAccessTokenSecret(accessTokenSecret.value);
 	            factory = new TwitterFactory(cb.build());
 			}
             twitter = factory.getInstance();
@@ -204,7 +185,6 @@ public class TwitterPlugin implements Plugin {
     		log.info("Sending Tweet: "+message);
 	        twitter.updateStatus(message);
         } catch (Exception e) {
-        	//log.error("Error occurred while sending tweet!",e);
             if (twitter != null) {
                 if (!twitter.getAuthorization().isEnabled()) {
                     log.error("Auth credentials were not set!");
@@ -219,7 +199,7 @@ public class TwitterPlugin implements Plugin {
 	 * Run this to perform manual twitter authentication.
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
         String testStatus="Hello from twitter4j";
         ConfigurationBuilder cb = new ConfigurationBuilder();
         //the following is set without accesstoken- desktop client
@@ -297,6 +277,6 @@ public class TwitterPlugin implements Plugin {
             System.out.println("Failed to read the system input.");
             System.exit(-1);
         }
-    }
+    }*/
 
 }

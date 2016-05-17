@@ -103,7 +103,9 @@ public class SimpleCommandPlugin implements Plugin  {
 	}
 	
 	public boolean hasResponseFor(String command) {
-		return commandMap.containsKey(command);
+		if (commandMap.containsKey(command)) {
+			return commandMap.get(command).enabled;
+		} else return false;
 	}
 	
 	/**
