@@ -191,8 +191,6 @@ public class BotConfig {
 			core.appendChild(irc);
 			irc.appendChild(port.createNode(document, "port"));
 			irc.appendChild(name.createNode(document, "username"));
-			irc.appendChild(server.createNode(document, "server"));
-			irc.appendChild(password.createNode(document, "password"));
 	
 			Element discord = (Element)document.createElement("discord"); 
 			discord.setAttribute("description", "Parameters for connecting to a Discord server");
@@ -209,10 +207,6 @@ public class BotConfig {
 				adminE.setAttribute("value", curAdmin.value);
 				adminsE.appendChild(adminE);
 			}
-			
-			discord.appendChild(useDiscord.createNode(document, "enabled"));
-			discord.appendChild(discordMainChannelName.createNode(document, "mainChannel"));
-			discord.appendChild(discordToken.createNode(document, "authToken"));
 		
 			Element plugin = (Element)document.createElement("plugin"); 
 			plugin.setAttribute("description", "Configuration for plugins.");
