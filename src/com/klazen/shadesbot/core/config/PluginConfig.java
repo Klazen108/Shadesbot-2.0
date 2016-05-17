@@ -26,7 +26,7 @@ public class PluginConfig {
 				enabled = Boolean.valueOf((String)xpath.evaluate("/*/@enabled", node, XPathConstants.STRING));
 			}
 		} catch (Exception e) {
-			log.warn("Non-fatal exception occurred when instantiating PluginConfig: "+e.getMessage());
+			log.warn("Non-fatal exception occurred when instantiating PluginConfig.",e);
 		}
 		log.debug(pluginName + " is enabled: "+enabled);
 	}

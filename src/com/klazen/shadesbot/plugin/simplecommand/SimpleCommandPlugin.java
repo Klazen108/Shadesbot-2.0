@@ -1,22 +1,18 @@
 package com.klazen.shadesbot.plugin.simplecommand;
 
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
@@ -30,7 +26,7 @@ import com.klazen.shadesbot.core.config.PluginConfig;
  * @author Klazen108
  */
 public class SimpleCommandPlugin implements Plugin  {
-	Map<String,CommandEntry> commandMap;
+	Map<String,CommandEntry> commandMap = new HashMap<String,CommandEntry>();
 	
 	public static final String SAVEFILE = "commands.txt";
 
@@ -38,44 +34,61 @@ public class SimpleCommandPlugin implements Plugin  {
 	
 	@Override
 	public void onSave(Node parentNode) {
-		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(SAVEFILE), "utf-8"))) {
-			for (Entry<String,CommandEntry> curEntry : commandMap.entrySet()) {
-				curEntry.getValue().save(writer);
-				log.debug("Saved to savefile: ["+curEntry.getValue().command+"]");
-			}
-		} catch (UnsupportedEncodingException e) {
-			log.error("UTF-8 encoding not supported!",e);
-		} catch (FileNotFoundException e) {
-			log.error("Couldn't open "+SAVEFILE+" for writing!",e);
-		} catch (IOException e) {
-			log.error("General IO Exception occurred!",e);
+		log.debug("Saving commands....");
+		
+		Element commands = parentNode.getOwnerDocument().createElement("commands");
+		commands.setAttribute("description", "Each command may have one match and one response. Matches are made via Regular Expressions, Java syntax applies.");
+		for (Entry<String,CommandEntry> curEntry : commandMap.entrySet()) {
+			Element command = parentNode.getOwnerDocument().createElement("command");
+			log.trace("curEntry.getValue().enabled="+curEntry.getValue().enabled);
+			command.setAttribute("enabled", Boolean.toString(curEntry.getValue().enabled));
+
+			Element match = parentNode.getOwnerDocument().createElement("match");
+			log.trace("curEntry.getValue().command="+curEntry.getValue().command);
+			match.setAttribute("value",curEntry.getValue().command);
+			command.appendChild(match);
+			Element response = parentNode.getOwnerDocument().createElement("response");
+			log.trace("curEntry.getValue().response="+curEntry.getValue().response);
+			response.setAttribute("value",curEntry.getValue().response);
+			command.appendChild(response);
+			
+			commands.appendChild(command);
+			
+			log.debug("Saved: ["+curEntry.getValue().command+"]");
 		}
+		parentNode.appendChild(commands);
+		log.debug("Commands saved");
 	}
 
 	@Override
 	public void onLoad(PluginConfig config) {
 		log.debug("Loading commands...");
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(SAVEFILE), "utf-8"))) {
-			Map<String,CommandEntry> newMap = new HashMap<String,CommandEntry>();
-			while(true) {
-				CommandEntry newEntry = CommandEntry.readIn(reader);
-				if (newEntry == null) break;
-				
-				log.debug("Loaded from savefile: ["+newEntry.command+"]["+newEntry.response+"]");
-				newMap.put(newEntry.command,newEntry);
+		try {
+			XPath xpath = XPathFactory.newInstance().newXPath();
+			NodeList commandNodes = (NodeList)xpath.evaluate("commands/command", config.getNode(), XPathConstants.NODESET);
+			if (commandNodes != null) {
+				log.trace("commandNodes.getLength()="+commandNodes.getLength());
+				for (int i=0;i<commandNodes.getLength();i++) {
+					try {
+						Node curNode = commandNodes.item(i);
+						String match = (String)xpath.evaluate("match/@value", curNode, XPathConstants.STRING);
+						log.trace("match="+match);
+						String rsp = (String)xpath.evaluate("response/@value", curNode, XPathConstants.STRING);
+						log.trace("rsp="+rsp);
+						Boolean enabled = Boolean.valueOf((String)xpath.evaluate("./@enabled", curNode, XPathConstants.STRING));
+						log.trace("enabled="+enabled);
+						
+						CommandEntry entry = new CommandEntry(enabled,match,rsp);
+						commandMap.put(entry.command, entry);
+					} catch (Exception e) {
+						log.error("Error loading command! Trying next...",e);
+					}
+				}
 			}
-			log.debug("Commands loaded...");
-			commandMap = newMap;
-		} catch (UnsupportedEncodingException e) {
-			log.error("UTF-8 encoding not supported!",e);
-		} catch (FileNotFoundException e) {
-			log.error("Couldn't open "+SAVEFILE+" for writing!",e);
-		} catch (IOException e) {
-			log.error("General IO Exception occurred!",e);
-		} catch (CommandReadException e) {
-			log.error("Error reading command!",e);
-			e.printStackTrace();
+		} catch (Exception e) {
+			log.error("Error loading commands!",e);
 		}
+		log.debug("Commands loaded");
 	}
 
 	@Override

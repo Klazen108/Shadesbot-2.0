@@ -48,7 +48,7 @@ public class ConfigEntryList<T> implements Iterable<ConfigEntry<T>>{
 			if (parentNode!=null) {
 				NodeList childNodes = (NodeList)xpath.evaluate(childName, parentNode, XPathConstants.NODESET);
 				for (int i = 0; i < childNodes.getLength(); i++) {
-					ConfigEntry<U> entry = ConfigEntry.loadFromXpathOrDefault(childNodes.item(i), "*", defaultValue, "");
+					ConfigEntry<U> entry = ConfigEntry.loadFromXpathOrDefault(childNodes.item(i), ".", defaultValue, "");
 					if (entry.value != null) {
 						list.add(entry);
 					}
@@ -58,40 +58,4 @@ public class ConfigEntryList<T> implements Iterable<ConfigEntry<T>>{
 		
 		return list;
 	}
-	/*
-	private static ConfigEntryList<Boolean> loadFromXpathOrDefaultBoolean(Node relativeNode, String xpathExpr, Boolean defaultValue, String defaultDescription) throws XPathExpressionException {
-		XPath xpath = XPathFactory.newInstance().newXPath();
-		
-		ConfigEntryList<Boolean> entry = new ConfigEntryList<Boolean>();
-		if (xpath.evaluate(xpathExpr, relativeNode, XPathConstants.NODE)!=null) {
-			entry.value = Boolean.valueOf((String)xpath.evaluate(xpathExpr+"/@value", relativeNode, XPathConstants.STRING));
-			entry.description = (String)xpath.evaluate(xpathExpr+"/@description", relativeNode, XPathConstants.STRING);
-		}
-		
-		return entry;
-	}
-	
-	private static ConfigEntryList<Integer> loadFromXpathOrDefaultInteger(Node relativeNode, String xpathExpr, Integer defaultValue, String defaultDescription) throws XPathExpressionException {
-		XPath xpath = XPathFactory.newInstance().newXPath();
-		
-		ConfigEntryList<Integer> entry = new ConfigEntryList<Integer>();
-		if (xpath.evaluate(xpathExpr, relativeNode, XPathConstants.NODE)!=null) {
-			entry.value = Integer.parseInt((String)xpath.evaluate(xpathExpr+"/@value", relativeNode, XPathConstants.STRING));
-			entry.description = (String)xpath.evaluate(xpathExpr+"/@description", relativeNode, XPathConstants.STRING);
-		}
-		
-		return entry;
-	}
-
-	private static ConfigEntryList<String> loadFromXpathOrDefaultString(Node relativeNode, String xpathExpr, String defaultValue, String defaultDescription) throws XPathExpressionException {
-		XPath xpath = XPathFactory.newInstance().newXPath();
-		
-		ConfigEntryList<String> entry = new ConfigEntryList<String>();
-		if (xpath.evaluate(xpathExpr, relativeNode, XPathConstants.NODE)!=null) {
-			entry.value = (String)xpath.evaluate(xpathExpr+"/@value", relativeNode, XPathConstants.STRING);
-			entry.description = (String)xpath.evaluate(xpathExpr+"/@description", relativeNode, XPathConstants.STRING);
-		}
-		
-		return entry;
-	}*/
 }

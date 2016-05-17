@@ -6,7 +6,6 @@ import com.klazen.shadesbot.core.MessageOrigin;
 import com.klazen.shadesbot.core.MessageSender;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.plugin.SimpleMessageHandler;
-import com.klazen.shadesbot.plugin.war.WarPlugin;
 
 public class SimpleCommandsHandler extends SimpleMessageHandler {
 

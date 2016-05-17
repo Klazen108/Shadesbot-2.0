@@ -149,7 +149,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	    			log.info("Plugin Disabled: "+curPlugin.getClass().getCanonicalName());
 	    		}
 	    	} catch (Exception e) {
-	    		log.error("Error initializing plugin "+curPlugin.getClass().getCanonicalName(),e);
+	    		log.error("Error starting plugin "+curPlugin.getClass().getCanonicalName(),e);
 	    	}
 	    }
 		log.info("Plugins Initialized.");
@@ -202,7 +202,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	    for (Class<? extends Plugin> curClass : pluginSubtypes) {
 	    	try {
 				plugins.put(curClass,curClass.getConstructor().newInstance());
-				log.info("Initialized plugin: "+curClass.getCanonicalName());
+				log.trace("Initialized plugin: "+curClass.getCanonicalName());
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				console.printLine(null,"(Not Fatal) Error loading plugin: " + curClass.getCanonicalName());
 				log.error("(Not Fatal) Error loading plugin: " + curClass.getCanonicalName(),e);

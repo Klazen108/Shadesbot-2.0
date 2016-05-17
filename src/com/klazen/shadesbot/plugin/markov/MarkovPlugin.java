@@ -25,6 +25,7 @@ import org.w3c.dom.NodeList;
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.ConfigEntry;
 import com.klazen.shadesbot.core.config.PluginConfig;
 import com.klazen.shadesbot.plugin.twitter.TwitterPlugin;
  
@@ -39,15 +40,15 @@ public class MarkovPlugin implements Plugin {
 	String lastMessage = "";
 
 	int snurdeepsCounter;
-	public final int SNURDEEPS_TRIGGER_THRESHOLD = 100;
-	boolean asciiOnly = true;
-	int maxWordSize = 15;
-	int minInputMessageSize = 7;
-	int maxInputMessageSize = 25;
-	int maxOutputMessageSize = 15;
-	String filename = "markov.xml";
-	int minAverageWordLength = 3;
-	boolean tweetsEnabled = true;
+	ConfigEntry<Integer> messageThreshold;
+	ConfigEntry<Boolean> asciiOnly;
+	ConfigEntry<Integer> maxWordSize;
+	ConfigEntry<Integer> minInputMessageSize;
+	ConfigEntry<Integer> maxInputMessageSize;
+	ConfigEntry<Integer> maxOutputMessageSize;
+	ConfigEntry<String> filename;
+	ConfigEntry<Integer> minAverageWordLength;
+	ConfigEntry<Boolean> tweetsEnabled;
 	
 	public MarkovPlugin() {
 		markovChain = new Hashtable<>();
@@ -68,10 +69,10 @@ public class MarkovPlugin implements Plugin {
 		for (String curStr : wordsArray) if (!curStr.isEmpty()) words.add(curStr); //remove empty messages
 		
 		//validate the message according to some rules
-		if (words.size() < minInputMessageSize) return; //ignore short messages
-		if (words.size() > maxInputMessageSize) return; //ignore long messages
+		if (words.size() < minInputMessageSize.value) return; //ignore short messages
+		if (words.size() > maxInputMessageSize.value) return; //ignore long messages
 		
-		if (asciiOnly) {
+		if (asciiOnly.value) {
 			int unicodeCounter=0;
 			for (int i = 0; i < phrase.length(); i++) {
 				if (phrase.codePointAt(i) > 255) unicodeCounter++;
@@ -83,7 +84,7 @@ public class MarkovPlugin implements Plugin {
 		String lastStr="LOLOLOLOL";
 		int dupeCounter=0;
 		for (String curStr : words) {
-			if (curStr.length() > maxWordSize) return; //ignore messages with long words (assume it's gibberish or links or something)
+			if (curStr.length() > maxWordSize.value) return; //ignore messages with long words (assume it's gibberish or links or something)
 			avgWordLen += curStr.length();
 			
 			if (curStr.equalsIgnoreCase(lastStr)) dupeCounter++;
@@ -92,7 +93,7 @@ public class MarkovPlugin implements Plugin {
 			lastStr=curStr;
 		}
 		avgWordLen /= words.size();
-		if (avgWordLen < minAverageWordLength) return; //ignore messages whose average word length is less than 3
+		if (avgWordLen < minAverageWordLength.value) return; //ignore messages whose average word length is less than 3
 		
 		//store the message in the database
 		Tuple curTuple;
@@ -129,7 +130,7 @@ public class MarkovPlugin implements Plugin {
 				curTuple = curTuple.shiftLeft(nextWord);
 			}
 			i++;
-		} while (!nextWord.isEmpty() && i < maxOutputMessageSize);
+		} while (!nextWord.isEmpty() && i < maxOutputMessageSize.value);
 		
 		return newPhrase.toString();
 	}
@@ -141,7 +142,19 @@ public class MarkovPlugin implements Plugin {
 
 	@Override
 	public void onSave(Node node) {
-		//TODO: save
+		log.trace("Saving markov config");
+		node.appendChild(messageThreshold.createNode(node.getOwnerDocument(), "message_threshold"));
+		node.appendChild(asciiOnly.createNode(node.getOwnerDocument(), "ascii_only"));
+		node.appendChild(maxWordSize.createNode(node.getOwnerDocument(), "max_word_size"));
+		node.appendChild(minInputMessageSize.createNode(node.getOwnerDocument(), "min_input_message_size"));
+		node.appendChild(maxInputMessageSize.createNode(node.getOwnerDocument(), "max_input_message_size"));
+		node.appendChild(maxOutputMessageSize.createNode(node.getOwnerDocument(), "max_output_message_size"));
+		node.appendChild(minAverageWordLength.createNode(node.getOwnerDocument(), "min_average_word_length"));
+		node.appendChild(filename.createNode(node.getOwnerDocument(), "filename"));
+		node.appendChild(minAverageWordLength.createNode(node.getOwnerDocument(), "min_average_word_length"));
+		node.appendChild(tweetsEnabled.createNode(node.getOwnerDocument(), "tweets_enabled"));
+		log.trace("Markov config saved.");
+		
 		log.trace("Saving markov chain");
 		try {
 		    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -191,18 +204,20 @@ public class MarkovPlugin implements Plugin {
 
 	@Override
 	public void onLoad(PluginConfig config) {
-		/*
-		 	load these from the config file:
-			public final int SNURDEEPS_TRIGGER_THRESHOLD = 100;
-			boolean asciiOnly = true;
-			int maxWordSize = 15;
-			int minInputMessageSize = 7;
-			int maxInputMessageSize = 25;
-			int maxOutputMessageSize = 15;
-			String filename = "markov.xml";
-			int minAverageWordLength = 3;
-		 */
+		log.trace("Loading Markov config");
+		messageThreshold = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "message_threshold", 60, "How many messages must be received before we send one of our own");
+		asciiOnly = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "ascii_only", true, "true/false - if true, messages composed primarily of non-ascii characters will be ignored (good for avoiding text art spam)");
+		maxWordSize = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "max_word_size", 15, "");
+		minInputMessageSize = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "min_input_message_size", 7, "Minimum required number of words in a message to have it parsed and added to the dictionary");
+		maxInputMessageSize = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "max_input_message_size", 25, "Maximum allowed number of words in a message to have it parsed and added to the dictionary");
+		maxOutputMessageSize = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "max_output_message_size", 15, "Maximum allowed length of generated messages (prevents infinte runaway)");
+		minAverageWordLength = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "min_average_word_length", 3, "Minimum required average length of words in a message to have it parsed and added to the dictionary");
+		filename = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "filename", "markov.xml", "Filename where the markov dictionary will be stored");
+		minAverageWordLength = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "min_average_word_length", 3, "Minimum required average length of words in a message to have it parsed and added to the dictionary");
+		tweetsEnabled = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "tweets_enabled", false, "true/false - Send a tweet every time a sentence is generated (requires the TwitterPlugin plugin)");
+		log.trace("Markov config loaded.");
 		
+		log.trace("Loading Markov chain");
 		Hashtable<Tuple, DenseBag<String>> newMarkovChain = new Hashtable<>();
 		
 		try {
@@ -252,7 +267,7 @@ public class MarkovPlugin implements Plugin {
 		//make messages even if offline
 		if (bot.getConfig().isSnurdeepsMode()) {
 			snurdeepsCounter++;
-			if (snurdeepsCounter > SNURDEEPS_TRIGGER_THRESHOLD) {
+			if (snurdeepsCounter > messageThreshold.value) {
 				snurdeepsCounter = 0;
 				
 				//try 5 times to make a sentence until the length is at least 3
@@ -262,7 +277,7 @@ public class MarkovPlugin implements Plugin {
 				
 				event.getSender().sendMessage(sentence, true);
 				
-				if (tweetsEnabled) {
+				if (tweetsEnabled.value) {
 					try {
 						TwitterPlugin twitter = bot.getPlugin(TwitterPlugin.class);
 						if (twitter != null) twitter.tweet(sentence);

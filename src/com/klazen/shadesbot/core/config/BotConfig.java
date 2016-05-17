@@ -200,6 +200,19 @@ public class BotConfig {
 			discord.appendChild(useDiscord.createNode(document, "enabled"));
 			discord.appendChild(discordMainChannelName.createNode(document, "mainChannel"));
 			discord.appendChild(discordToken.createNode(document, "authToken"));
+
+			Element adminsE = (Element)document.createElement("admins"); 
+			adminsE.setAttribute("description", "Admins for your bot, who can control it even if not modded.");
+			core.appendChild(adminsE);
+			for (ConfigEntry<String> curAdmin : admins) {
+				Element adminE = (Element)document.createElement("admin"); 
+				adminE.setAttribute("value", curAdmin.value);
+				adminsE.appendChild(adminE);
+			}
+			
+			discord.appendChild(useDiscord.createNode(document, "enabled"));
+			discord.appendChild(discordMainChannelName.createNode(document, "mainChannel"));
+			discord.appendChild(discordToken.createNode(document, "authToken"));
 		
 			Element plugin = (Element)document.createElement("plugin"); 
 			plugin.setAttribute("description", "Configuration for plugins.");
@@ -207,7 +220,7 @@ public class BotConfig {
 			for (Plugin curPlugin : plugins) {
 				Element curPluginNode = (Element)document.createElement(curPlugin.getClass().getCanonicalName());
 				curPlugin.onSave(curPluginNode);
-				root.appendChild(curPluginNode);
+				plugin.appendChild(curPluginNode);
 			}
 			
            DOMSource domSource = new DOMSource(document);
@@ -220,7 +233,7 @@ public class BotConfig {
         }
         catch(Exception e)
         {
-        	log.error("Exception while saving config to file: "+e.getMessage());
+        	log.error("Exception while saving config to file!",e);
         }
 	}
 	
@@ -288,7 +301,7 @@ public class BotConfig {
 			}
 			
 		} catch (Exception e) {
-			log.error("Error while parsing config file: "+e.toString());
+			log.error("Error while parsing config file!",e);
 		}
 	}
 }
