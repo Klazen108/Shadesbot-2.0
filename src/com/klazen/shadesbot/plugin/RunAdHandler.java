@@ -15,7 +15,8 @@ public class RunAdHandler extends SimpleMessageHandler {
 
 	@Override
 	protected boolean onMessage(String username, boolean isMod, String message, Matcher m, MessageSender sender, MessageOrigin origin) {
-		if (isMod) {
+		//moving this to config file
+		/*if (isMod) {
 			switch (bot.irandom(11)) {
 			case 0: sender.sendMessage("This stream brought to you by cool, crisp, refreshing Aquafina http://imgur.com/fJP3oJK", false); break;
 			case 1: sender.sendMessage("Today's stream paid for, in part, by Viewers Like You!", false); break;
@@ -30,7 +31,7 @@ public class RunAdHandler extends SimpleMessageHandler {
 			case 10: sender.sendMessage("Munchos, Munchos, Munchos are delicio... Matt you're getting timed out", false); break;
 			case 11: sender.sendMessage("There's nothing better than a nice, luscious waffle cooked lovingly by the chef who's trying to seduce me at the Waffle House", false); break;
 			}
-		}
+		}*/
 		return false;
 	}
 

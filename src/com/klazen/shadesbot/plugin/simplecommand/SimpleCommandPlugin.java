@@ -1,8 +1,8 @@
 package com.klazen.shadesbot.plugin.simplecommand;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -18,6 +18,7 @@ import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
 import com.klazen.shadesbot.core.config.PluginConfig;
+import com.klazen.shadesbot.plugin.simplecommand.CommandEntry.SelectorType;
 
 /**
  * A simple command handler, for generic one-line responses without any data dependency. 
@@ -26,7 +27,7 @@ import com.klazen.shadesbot.core.config.PluginConfig;
  * @author Klazen108
  */
 public class SimpleCommandPlugin implements Plugin  {
-	Map<String,CommandEntry> commandMap = new HashMap<String,CommandEntry>();
+	Set<CommandEntry> commandSet = new HashSet<CommandEntry>();
 	
 	public static final String SAVEFILE = "commands.txt";
 
@@ -37,24 +38,33 @@ public class SimpleCommandPlugin implements Plugin  {
 		log.debug("Saving commands....");
 		
 		Element commands = parentNode.getOwnerDocument().createElement("commands");
-		commands.setAttribute("description", "Each command may have one match and one response. Matches are made via Regular Expressions, Java syntax applies.");
-		for (Entry<String,CommandEntry> curEntry : commandMap.entrySet()) {
+		commands.setAttribute("description", "Each command may have one match and multiple responses. Matches are made via Regular Expressions, Java syntax applies.");
+		for (CommandEntry curEntry : commandSet) {
 			Element command = parentNode.getOwnerDocument().createElement("command");
-			log.trace("curEntry.getValue().enabled="+curEntry.getValue().enabled);
-			command.setAttribute("enabled", Boolean.toString(curEntry.getValue().enabled));
+			
+			log.trace("enabled="+curEntry.isEnabled());
+			command.setAttribute("enabled", Boolean.toString(curEntry.isEnabled()));
+			
+			log.trace("mod_only="+curEntry.isModOnly());
+			command.setAttribute("mod_only", Boolean.toString(curEntry.isModOnly()));
 
-			Element match = parentNode.getOwnerDocument().createElement("match");
-			log.trace("curEntry.getValue().command="+curEntry.getValue().command);
-			match.setAttribute("value",curEntry.getValue().command);
-			command.appendChild(match);
-			Element response = parentNode.getOwnerDocument().createElement("response");
-			log.trace("curEntry.getValue().response="+curEntry.getValue().response);
-			response.setAttribute("value",curEntry.getValue().response);
-			command.appendChild(response);
+			for (String curMatch : curEntry.getAllMatches()) {
+				Element match = parentNode.getOwnerDocument().createElement("match");
+				log.trace("match="+curMatch);
+				match.setAttribute("value",curMatch);
+				command.appendChild(match);
+			}
+			
+			for (String curResponse : curEntry.getAllResponses()) {
+				Element response = parentNode.getOwnerDocument().createElement("response");
+				log.trace("response="+curResponse);
+				response.setAttribute("value",curResponse);
+				command.appendChild(response);
+			}
 			
 			commands.appendChild(command);
 			
-			log.debug("Saved: ["+curEntry.getValue().command+"]");
+			log.debug("Saved");
 		}
 		parentNode.appendChild(commands);
 		log.debug("Commands saved");
@@ -71,15 +81,34 @@ public class SimpleCommandPlugin implements Plugin  {
 				for (int i=0;i<commandNodes.getLength();i++) {
 					try {
 						Node curNode = commandNodes.item(i);
-						String match = (String)xpath.evaluate("match/@value", curNode, XPathConstants.STRING);
-						log.trace("match="+match);
-						String rsp = (String)xpath.evaluate("response/@value", curNode, XPathConstants.STRING);
-						log.trace("rsp="+rsp);
+						CommandEntry entry = new CommandEntry();
+						
+						NodeList matches = (NodeList)xpath.evaluate("match/@value", curNode, XPathConstants.NODESET);
+						for (int j=0; j< matches.getLength(); j++) {
+							String match = matches.item(j).getNodeValue();
+							log.trace("match="+match);
+							entry.addMatch(match);
+						}
+						
+						NodeList responses = (NodeList)xpath.evaluate("response/@value", curNode, XPathConstants.NODESET);
+						for (int j=0; j< responses.getLength(); j++) {
+							String response = responses.item(j).getNodeValue();
+							log.trace("response="+response);
+							entry.addResponse(response);
+						}
+						
 						Boolean enabled = Boolean.valueOf((String)xpath.evaluate("./@enabled", curNode, XPathConstants.STRING));
 						log.trace("enabled="+enabled);
+						entry.setEnabled(enabled);
+
+						Boolean modOnly = Boolean.valueOf((String)xpath.evaluate("./@mod_only", curNode, XPathConstants.STRING));
+						log.trace("modOnly="+modOnly);
+						entry.setModOnly(modOnly);
 						
-						CommandEntry entry = new CommandEntry(enabled,match,rsp);
-						commandMap.put(entry.command, entry);
+						String type = (String)xpath.evaluate("./@type", curNode, XPathConstants.STRING);
+						entry.setSelectorType(SelectorType.fromString(type));
+						
+						commandSet.add(entry);
 					} catch (Exception e) {
 						log.error("Error loading command! Trying next...",e);
 					}
@@ -103,22 +132,22 @@ public class SimpleCommandPlugin implements Plugin  {
 	}
 	
 	public boolean hasResponseFor(String command) {
-		if (commandMap.containsKey(command)) {
-			return commandMap.get(command).enabled;
-		} else return false;
+		return commandSet.stream().anyMatch(p->p.isEnabled() && p.hasResponseFor(command));
 	}
 	
 	/**
-	 * 
 	 * @param command
 	 * @param username Name of the user who triggered the command
 	 * @return The response for the command, with all replacements made
 	 */
-	public String getResponseFor(String command, String username) {
-		if (!hasResponseFor(command)) throw new RuntimeException("Tried to get a response for a non-existant command, use hasResponseFor!");
-		String response = commandMap.get(command).response;
-		response.replaceAll("%U%", username);
-		return response;
+	public String getResponseFor(String command, String username, boolean isMod) {
+		Optional<CommandEntry> oEntry = commandSet.stream().filter(p->p.isEnabled() && p.hasResponseFor(command) && (!p.isModOnly() || isMod)).findFirst();
+		if (oEntry.isPresent()) {
+			return oEntry.get().getResponse().replaceAll("%U%", username);
+		} else {
+			//shouldn't get here if you check first
+			throw new RuntimeException("Tried to get a response for a non-existant command, use hasResponseFor!");
+		}
 	}
 
 }

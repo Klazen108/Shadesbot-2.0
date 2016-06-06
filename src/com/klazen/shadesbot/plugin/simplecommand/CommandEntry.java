@@ -1,22 +1,90 @@
 package com.klazen.shadesbot.plugin.simplecommand;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 public class CommandEntry {
-	String command;
-	String response;
-	boolean enabled;
+	private List<String> matches;
+	private List<String> responses;
+	private boolean enabled;
+	private boolean modOnly;
 	
-	public static final String LINEBREAK = "\r\n";
+	private Selector<String> selector;
 	
 	public CommandEntry() {
-		command = null;
-		response = null;
+		matches = new LinkedList<String>();
+		responses = new LinkedList<String>();
 		enabled = false;
 	}
 	
-	public CommandEntry(boolean enabled, String command, String response) {
-		if (command != null && response == null) throw new IllegalArgumentException("A command must have a response!");
-		this.command = command;
-		this.response = response;
+	public void addMatch(String match) {
+		matches.add(match);
+	}
+	
+	public void addResponse(String response) {
+		responses.add(response);
+	}
+	
+	public String getResponse() {
+		return selector.select(responses);
+	}
+	
+	public boolean isEnabled() {
+		return enabled;
+	}
+	
+	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
+	
+	public boolean isModOnly() {
+		return modOnly;
+	}
+	
+	public void setModOnly(boolean modOnly) {
+		this.modOnly = modOnly;
+	}
+	
+	public boolean hasResponseFor(String match) {
+		return matches.contains(match);
+	}
+	
+	public void setSelectorType(SelectorType t) {
+		selector = t.getSelectorInstance();
+	}
+	
+	public Collection<String> getAllMatches() {
+		return Collections.unmodifiableCollection(matches);
+	}
+	
+	public Collection<String> getAllResponses() {
+		return Collections.unmodifiableCollection(responses);
+	}
+	
+	enum SelectorType {
+		RANDOM, NEXT;
+		
+		public <T> Selector<T> getSelectorInstance() {
+			if (this == NEXT) {
+				return new NextSelector<T>();
+			} else {
+				return new RandomSelector<T>();
+			}
+		}
+		
+		public static SelectorType fromString(String str) {
+			if (str.toLowerCase().contains("next")) return NEXT;
+			else return RANDOM;
+		}
+	}
+	
+	/*class SingleSelector<T> implements Selector<T> {
+		@Override
+		public T select(Collection<T> collection) {
+			if (collection.size()==0) return null;
+			else return collection.iterator().next();
+		}
+	}*/
 }

@@ -18,7 +18,7 @@ public class SimpleCommandsHandler extends SimpleMessageHandler {
 	protected boolean onMessage(String username, boolean isMod, String message, Matcher m,MessageSender sender, MessageOrigin origin) {
 		SimpleCommandPlugin commandPlugin = bot.getPlugin(SimpleCommandPlugin.class);
 		if (commandPlugin.hasResponseFor(m.group(1))) {
-			sender.sendMessage(commandPlugin.getResponseFor(m.group(1),username), false);
+			sender.sendMessage(commandPlugin.getResponseFor(m.group(1),username,isMod), false);
 			return true;
 		}
 		return false;
