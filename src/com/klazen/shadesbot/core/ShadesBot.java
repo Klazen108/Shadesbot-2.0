@@ -46,16 +46,18 @@ import com.klazen.shadesbot.core.config.PluginConfig;
 import com.klazen.shadesbot.plugin.*;
 
 import sx.blah.discord.api.ClientBuilder;
-import sx.blah.discord.api.EventDispatcher;
 import sx.blah.discord.api.IDiscordClient;
-import sx.blah.discord.api.IListener;
+import sx.blah.discord.api.events.EventDispatcher;
+import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.Status;
+import sx.blah.discord.handle.obj.Status.StatusType;
 import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.HTTP429Exception;
 import sx.blah.discord.util.MessageBuilder;
 import sx.blah.discord.util.MissingPermissionsException;
+import sx.blah.discord.util.RateLimitException;
 
 public class ShadesBot extends ListenerAdapter<PircBotX> {
 	/** How often (in ms) to give XP points to users in the userlist */
@@ -270,7 +272,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	public void discordReady(ReadyEvent e) {
 		log.info("Discord connected!");
 		console.printLineItalic(null, "Discord connected!");
-		discordClient.updatePresence(false, Optional.of("Badger Diddler 64"));
+		discordClient.changePresence(false);
+		discordClient.changeStatus(Status.game("Badger Diddler 64"));
 	}
 	
 	public void setBot(PircBotX bot) {
@@ -544,7 +547,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			console.printLine("Shadesbot",message);
 		} catch (MissingPermissionsException e) {
 			log.error("Unable to send message "+message+" - incorrect permissions",e);
-		} catch (HTTP429Exception e) {
+		} catch (RateLimitException e) {
 			log.error("Unable to send message "+message+" - rate limited",e);
 		} catch (DiscordException e) {
 			log.error("Unable to send message "+message+"",e);
@@ -556,7 +559,7 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 			discordClient.getChannelByID(discordMainChannelID).sendMessage(message,withTTS);
 		} catch (MissingPermissionsException e) {
 			log.error("Unable to send message "+message+" - incorrect permissions",e);
-		} catch (HTTP429Exception e) {
+		} catch (RateLimitException e) {
 			log.error("Unable to send message "+message+" - rate limited",e);
 		} catch (DiscordException e) {
 			log.error("Unable to send message "+message+"",e);
