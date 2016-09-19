@@ -6,6 +6,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class PluginConfig {
@@ -19,7 +20,7 @@ public class PluginConfig {
 		this.xmlNode = node;
 		pluginName = node.getNodeName();
 		
-		enabled=true;
+		enabled=false;
 		try {
 			XPath xpath = XPathFactory.newInstance().newXPath();
 			if (node != null && xpath.evaluate("@enabled", node, XPathConstants.NODE)!=null) {
@@ -36,7 +37,7 @@ public class PluginConfig {
 		this.xmlNode = null;
 		pluginName = fullyQualifiedClassName;
 		
-		enabled=true;
+		enabled=false;
 		log.debug(pluginName + " is enabled: "+enabled);
 		log.debug("Created an empty PluginConfig for this plugin.");
 	}
@@ -46,6 +47,8 @@ public class PluginConfig {
 	}
 	
 	public Node getNode() {
+		//set enabled before returning
+		((Element)xmlNode).setAttribute("enabled",enabled?"true":"false");
 		return xmlNode;
 	}
 	

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -219,7 +220,7 @@ public class BotConfig {
 			for (Plugin curPlugin : plugins) {
 				log.trace("Saving plugin: " + curPlugin.getClass().getCanonicalName());
 				Element curPluginNode = (Element)document.createElement(curPlugin.getClass().getCanonicalName());
-				//curPluginNode.setAttribute("enabled", value); //TODO: where can I get this from?
+				((Element)curPluginNode).setAttribute("enabled", true?"true":"false"); //TODO: where can I get this from?
 				curPlugin.onSave(curPluginNode);
 				plugin.appendChild(curPluginNode);
 			}
@@ -244,6 +245,8 @@ public class BotConfig {
             StreamResult result = new StreamResult(writer);
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             transformer.transform(domSource, result);
             writer.flush();
         }

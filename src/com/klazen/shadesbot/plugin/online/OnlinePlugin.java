@@ -15,6 +15,7 @@ import org.w3c.dom.Node;
 import com.klazen.shadesbot.core.Plugin;
 import com.klazen.shadesbot.core.ShadesBot;
 import com.klazen.shadesbot.core.ShadesMessageEvent;
+import com.klazen.shadesbot.core.config.ConfigEntry;
 import com.klazen.shadesbot.core.config.PluginConfig;
 
 /**
@@ -27,16 +28,23 @@ import com.klazen.shadesbot.core.config.PluginConfig;
 public class OnlinePlugin implements Plugin, Runnable {
 	static Logger log = LoggerFactory.getLogger(OnlinePlugin.class);
 	ShadesBot bot;
+	ConfigEntry<String> clientID;
 	
 	Thread t;
 	
 	boolean keepRunning=true;
 	
 	@Override
-	public void onSave(Node parentNode) { }
+	public void onSave(Node parentNode) { 
+		log.trace("Saving online config");
+		parentNode.appendChild(clientID.createNode(parentNode.getOwnerDocument(), "client_id"));
+		log.trace("Done saving online config.");
+	}
 
 	@Override
-	public void onLoad(PluginConfig config) { }
+	public void onLoad(PluginConfig config) {
+		clientID = ConfigEntry.loadFromXpathOrDefault(config.getNode(), "client_id", "", "Your Twitch API Client ID. See more: https://blog.twitch.tv/client-id-required-for-kraken-api-calls-afbb8e95f843#.f76g3m6x5");
+	}
 
 	@Override
 	public void init(ShadesBot bot) {
@@ -103,8 +111,9 @@ public class OnlinePlugin implements Plugin, Runnable {
 		    connection.setUseCaches(false);
 		    connection.setDoInput(true);
 		    connection.setDoOutput(false);
+		    connection.setRequestProperty("Client-ID", clientID.value);
 		    if (connection.getResponseCode() != 200) {
-		    	//log.warn("Response code "+connection.getResponseCode()+" received from "+API_ENDPOINT);
+		    	log.warn("Response code "+connection.getResponseCode()+" received from twitch API request: "+u.toString());
 		    	//return; //just skip this attempt if you get a 503
 		    }
 		    log.trace("Response code: "+connection.getResponseCode());

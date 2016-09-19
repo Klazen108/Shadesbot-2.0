@@ -12,3 +12,5 @@ markov.xml
 boshytime.txt
 twitterConfig
 commands.txt
+messageLog.txt
+shadesbot.log.*
