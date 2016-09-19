@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+@SuppressWarnings("serial")
 public class TwitchAuthDialog extends JDialog implements ActionListener, WindowListener {
 	
 	JButton btnToken;

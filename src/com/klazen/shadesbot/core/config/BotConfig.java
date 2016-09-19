@@ -220,7 +220,7 @@ public class BotConfig {
 			for (Plugin curPlugin : plugins) {
 				log.trace("Saving plugin: " + curPlugin.getClass().getCanonicalName());
 				Element curPluginNode = (Element)document.createElement(curPlugin.getClass().getCanonicalName());
-				((Element)curPluginNode).setAttribute("enabled", true?"true":"false"); //TODO: where can I get this from?
+				((Element)curPluginNode).setAttribute("enabled", "true");//true?"true":"false"); //if it's in this list, it's enabled
 				curPlugin.onSave(curPluginNode);
 				plugin.appendChild(curPluginNode);
 			}

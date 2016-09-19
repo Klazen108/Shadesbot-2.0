@@ -102,7 +102,8 @@ public class ShadesBot extends ListenerAdapter<PircBotX> {
 	IDiscordClient discordClient;
 	
 	boolean ircConnected;
-	
+
+	@SuppressWarnings("unchecked")
 	public ShadesBot(BotConsole console, BotConfig config) throws ClassNotFoundException, IOException  {
 		log.info("Hello from Shadesbot's Constructor!");
 		this.console = console;

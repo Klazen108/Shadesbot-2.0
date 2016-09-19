@@ -12,7 +12,6 @@ import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 
 import java.awt.GridBagLayout;
 
@@ -48,11 +47,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.pircbotx.Configuration;
-import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
-import org.pircbotx.output.OutputCAP;
-import org.pircbotx.output.OutputRaw;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

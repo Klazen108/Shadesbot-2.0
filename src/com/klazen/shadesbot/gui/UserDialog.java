@@ -32,9 +32,6 @@ import javax.swing.JCheckBox;
 
 import java.awt.Dimension;
 import java.util.List;
-import java.util.Map;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
@@ -43,6 +40,7 @@ import java.awt.event.WindowListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 
+@SuppressWarnings("serial")
 public class UserDialog extends JDialog implements WindowListener {
 
 	private final JPanel contentPanel = new JPanel();
@@ -51,7 +49,7 @@ public class UserDialog extends JDialog implements WindowListener {
 	private JTextField txtRPS;
 	private JTextField txtGuess;
 	private JLabel lblUsername;
-	private JList lstUsers;
+	private JList<String> lstUsers;
 	
 	MainFrame frame;
 	ShadesBot bot;
@@ -119,7 +117,7 @@ public class UserDialog extends JDialog implements WindowListener {
 			gbc_scrollPane.gridy = 0;
 			contentPanel.add(scrollPane, gbc_scrollPane);
 			{
-				lstUsers = new JList();
+				lstUsers = new JList<String>();
 				lstUsers.addListSelectionListener(new ListSelectionListener() {
 					public void valueChanged(ListSelectionEvent e) {
 						if (!e.getValueIsAdjusting()) changePerson();
@@ -445,7 +443,7 @@ public class UserDialog extends JDialog implements WindowListener {
 		String name = JOptionPane.showInputDialog("Input Person's Name").toLowerCase();
 		if (!name.isEmpty()) {
 			if (!bot.getPersonMap().containsKey(name)) {
-				Person p = bot.getPerson(name); //adds the person to the bot's map
+				/*Person p = */bot.getPerson(name); //adds the person to the bot's map
 				refreshList();
 			} else {
 				JOptionPane.showMessageDialog(null, "Already have an entry for "+name+"! Selecting instead.");
@@ -460,7 +458,7 @@ public class UserDialog extends JDialog implements WindowListener {
 			public void run() {
 				DefaultListModel<String> dlm = new DefaultListModel<>();
 				
-				Map<String,Person> personMap = bot.getPersonMap();
+				//Map<String,Person> personMap = bot.getPersonMap();
 		        List<String> sortedList = Ordering.natural().immutableSortedCopy(bot.getPersonMap().keySet());
 				for (String curName : sortedList) {
 					dlm.addElement(curName);
